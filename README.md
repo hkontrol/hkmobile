@@ -16,30 +16,29 @@ Because of gomobile [has limited support](https://pkg.go.dev/golang.org/x/mobile
 
 ```
 type CompatibleKontroller interface {
-  Init(mobile MobileReceiver) string
-  StartDiscovery() string
-  StopDiscovery() string
-  
-  GetAllDevices() string
-  GetPairedDevices() string
-  GetVerifiedDevices() string
+	StartDiscovery() string
+	StopDiscovery() string
 
-  PairSetup(deviceId string, pin string) string
-  PairVerify(deviceId string) string
-  Unpair(deviceId string) string
+	GetAllDevices() string
+	GetPairedDevices() string
+	GetVerifiedDevices() string
 
-  PairSetupAndVerify(deviceId string, pin string) string
+	PairSetup(deviceId string, pin string) string
+	PairVerify(deviceId string) string
+	Unpair(deviceId string) string
 
-  GetDeviceInfo(deviceId string) string
-  ListAccessories(deviceId string) string
-  GetAccessoryInfo(deviceId string, aid int) string
-  GetCharacteristicInfo(deviceId string, aid int, iid string) string
-  
-  GetAccessoriesReq(deviceId string) string
-  GetCharacteristicReq(deviceId string, characteristic string) string
-  PutCharacteristicReq(deviceId string, aid int, iid int, value string) string
+	PairSetupAndVerify(deviceId string, pin string) string
 
-  WatchCharacteristic(deviceId string, aid int, iid int) string
+	GetDeviceInfo(deviceId string) string
+	ListAccessories(deviceId string) string
+	GetAccessoryInfo(deviceId string, aid int) string
+
+	GetAccessoriesReq(deviceId string) string
+	GetCharacteristicReq(deviceId string, aid int, iid int) string
+	PutCharacteristicReq(deviceId string, aid int, iid int, value string) string
+
+	SubscribeToCharacteristic(deviceId string, aid int, iid int) string
+	UnsubscribeFromCharacteristic(deviceId string, aid int, iid int) string
 }
 ```
 
