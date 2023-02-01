@@ -56,3 +56,12 @@ type MobileReceiver interface {
 }
 ```
 
+## build
+
+build `aar` archive:
+
+```text
+go get golang.org/x/mobile/bind
+gomobile bind -target=android ./
+cp ./hkmobile.aar ./App5/app/libs
+```
