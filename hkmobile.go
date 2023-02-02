@@ -73,12 +73,15 @@ func responseResult(res interface{}) string {
 }
 
 type hkWrapper struct {
-	controller *hkontroller.Controller
-	receiver   MobileReceiver
+	controller      *hkontroller.Controller
+	receiver        MobileReceiver
+	cancelDiscovery context.CancelFunc
 }
 
 func (k *hkWrapper) StartDiscovery() string {
-	disco, lost := k.controller.StartDiscovering()
+	ctx, cancel := context.WithCancel(context.Background())
+	k.cancelDiscovery = cancel
+	disco, lost := k.controller.StartDiscoveryWithContext(ctx)
 
 	go func() {
 		for d := range disco {
@@ -120,8 +123,10 @@ func (k *hkWrapper) StartDiscovery() string {
 }
 
 func (k *hkWrapper) StopDiscovery() string {
-	//TODO implement me
-	return responseError("not implemented")
+	if k.cancelDiscovery != nil {
+		k.cancelDiscovery()
+	}
+	return responseResult("canceled")
 }
 
 type Device struct {
@@ -177,7 +182,7 @@ func (k *hkWrapper) PairSetup(deviceId string, pin string) string {
 
 	err := dd.PairSetup(pin)
 	if err != nil {
-		responseError(err.Error())
+		return responseError(err.Error())
 	}
 	return responseResult("paired")
 }
@@ -190,7 +195,7 @@ func (k *hkWrapper) PairVerify(deviceId string) string {
 
 	err := dd.PairVerify()
 	if err != nil {
-		responseError(err.Error())
+		return responseError(err.Error())
 	}
 	return responseResult("verified")
 }
@@ -203,7 +208,7 @@ func (k *hkWrapper) Unpair(deviceId string) string {
 
 	err := dd.Unpair()
 	if err != nil {
-		responseError(err.Error())
+		return responseError(err.Error())
 	}
 	return responseResult("unpaired")
 }
@@ -216,7 +221,7 @@ func (k *hkWrapper) PairSetupAndVerify(deviceId string, pin string) string {
 
 	err := dd.PairSetupAndVerify(context.Background(), pin, 5000*time.Millisecond)
 	if err != nil {
-		responseError(err.Error())
+		return responseError(err.Error())
 	}
 	return responseResult("verified")
 }
@@ -310,7 +315,9 @@ func (k *hkWrapper) UnsubscribeFromCharacteristic(deviceId string, aid int, iid 
 	return responseError("implement me")
 }
 
-func NewCompatibleKontroller(name string, configDir string, receiver MobileReceiver) CompatibleKontroller {
+// NewCompatibleController returns wrapper aroung hkontroller.Controller.
+// NewCompatibleController(name, configDir, receiver)
+func NewCompatibleController(name string, configDir string, receiver MobileReceiver) CompatibleKontroller {
 	store := hkontroller.NewFsStore(path.Join(configDir, "hkontroller"))
 	controller, err := hkontroller.NewController(store, name)
 	if err != nil {
