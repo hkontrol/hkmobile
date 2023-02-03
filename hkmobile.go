@@ -66,7 +66,7 @@ func responseResult(res interface{}) string {
 		})
 	if err != nil {
 		return responseError(
-			fmt.Sprintf("error composing result json: %v", err),
+			fmt.Sprintf("error marshaling result json: %v", err),
 		)
 	}
 	return string(jj)
@@ -85,28 +85,55 @@ func (k *hkWrapper) StartDiscovery() string {
 
 	go func() {
 		for d := range disco {
-			fmt.Println("discovered", d.Id)
-			k.receiver.OnDiscovery(d.Id)
 
 			// catch events and pass to receiver
+			go func() {
+				cc := convertDevice(d)
+				jj, err := json.Marshal(cc)
+				if err != nil {
+					return
+				}
+				k.receiver.OnDiscovery(string(jj))
+			}()
+
 			go func(dd *hkontroller.Device) {
 				for range dd.OnPaired() {
-					k.receiver.OnPaired(dd.Id)
+					cc := convertDevice(dd)
+					jj, err := json.Marshal(cc)
+					if err != nil {
+						continue
+					}
+					k.receiver.OnPaired(string(jj))
 				}
 			}(d)
 			go func(dd *hkontroller.Device) {
 				for range dd.OnUnpaired() {
-					k.receiver.OnUnpaired(dd.Id)
+					cc := convertDevice(dd)
+					jj, err := json.Marshal(cc)
+					if err != nil {
+						continue
+					}
+					k.receiver.OnUnpaired(string(jj))
 				}
 			}(d)
 			go func(dd *hkontroller.Device) {
 				for range dd.OnVerified() {
-					k.receiver.OnVerified(dd.Id)
+					cc := convertDevice(dd)
+					jj, err := json.Marshal(cc)
+					if err != nil {
+						continue
+					}
+					k.receiver.OnVerified(string(jj))
 				}
 			}(d)
 			go func(dd *hkontroller.Device) {
 				for range dd.OnClose() {
-					k.receiver.OnClose(dd.Id)
+					cc := convertDevice(dd)
+					jj, err := json.Marshal(cc)
+					if err != nil {
+						continue
+					}
+					k.receiver.OnClose(string(jj))
 				}
 			}(d)
 		}
@@ -114,8 +141,14 @@ func (k *hkWrapper) StartDiscovery() string {
 
 	go func() {
 		for d := range lost {
-			fmt.Println("lost", d.Id)
-			k.receiver.OnLost(d.Id)
+			go func() {
+				cc := convertDevice(d)
+				jj, err := json.Marshal(cc)
+				if err != nil {
+					return
+				}
+				k.receiver.OnLost(string(jj))
+			}()
 		}
 	}()
 
@@ -130,20 +163,26 @@ func (k *hkWrapper) StopDiscovery() string {
 }
 
 type Device struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	Discovered bool   `json:"discovered"`
-	Paired     bool   `json:"paired"`
-	Verified   bool   `json:"verified"`
+	Id             string              `json:"id"`
+	Name           string              `json:"name"`
+	Discovered     bool                `json:"discovered"`
+	Paired         bool                `json:"paired"`
+	Verified       bool                `json:"verified"`
+	Pairing        hkontroller.Pairing `json:"pairing"`
+	DnsServiceName string              `json:"dns_service_name"`
+	Txt            map[string]string   `json:"txt"`
 }
 
 func convertDevice(d *hkontroller.Device) Device {
 	return Device{
-		Id:         d.Id,
-		Name:       d.Name,
-		Discovered: d.IsDiscovered(),
-		Paired:     d.IsPaired(),
-		Verified:   d.IsVerified(),
+		Id:             d.Id,
+		Name:           d.Name,
+		Discovered:     d.IsDiscovered(),
+		Paired:         d.IsPaired(),
+		Verified:       d.IsVerified(),
+		Pairing:        d.GetPairingInfo(),
+		Txt:            d.GetDnssdEntry().Text,
+		DnsServiceName: d.GetDnssdEntry().ServiceInstanceName(),
 	}
 }
 
