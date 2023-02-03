@@ -27,22 +27,22 @@ type CompatibleKontroller interface {
 	GetPairedDevices() string
 	GetVerifiedDevices() string
 
-	PairSetup(deviceId string, pin string) string
-	PairVerify(deviceId string) string
-	Unpair(deviceId string) string
+	PairSetup(deviceName string, pin string) string
+	PairVerify(deviceName string) string
+	Unpair(deviceName string) string
 
-	PairSetupAndVerify(deviceId string, pin string) string
+	PairSetupAndVerify(deviceName string, pin string) string
 
-	GetDeviceInfo(deviceId string) string
-	ListAccessories(deviceId string) string
-	GetAccessoryInfo(deviceId string, aid int) string
+	GetDeviceInfo(deviceName string) string
+	ListAccessories(deviceName string) string
+	GetAccessoryInfo(deviceName string, aid int) string
 
-	GetAccessoriesReq(deviceId string) string
-	GetCharacteristicReq(deviceId string, aid int, iid int) string
-	PutCharacteristicReq(deviceId string, aid int, iid int, value string) string
+	GetAccessoriesReq(deviceName string) string
+	GetCharacteristicReq(deviceName string, aid int, iid int) string
+	PutCharacteristicReq(deviceName string, aid int, iid int, value string) string
 
-	SubscribeToCharacteristic(deviceId string, aid int, iid int) string
-	UnsubscribeFromCharacteristic(deviceId string, aid int, iid int) string
+	SubscribeToCharacteristic(deviceName string, aid int, iid int) string
+	UnsubscribeFromCharacteristic(deviceName string, aid int, iid int) string
 }
 
 type Result struct {
@@ -163,7 +163,6 @@ func (k *hkWrapper) StopDiscovery() string {
 }
 
 type Device struct {
-	Id             string              `json:"id"`
 	Name           string              `json:"name"`
 	Discovered     bool                `json:"discovered"`
 	Paired         bool                `json:"paired"`
@@ -175,7 +174,6 @@ type Device struct {
 
 func convertDevice(d *hkontroller.Device) Device {
 	return Device{
-		Id:             d.Id,
 		Name:           d.Name,
 		Discovered:     d.IsDiscovered(),
 		Paired:         d.IsPaired(),
@@ -212,9 +210,9 @@ func (k *hkWrapper) GetVerifiedDevices() string {
 	return responseResult(res)
 }
 
-func (k *hkWrapper) PairSetup(deviceId string, pin string) string {
+func (k *hkWrapper) PairSetup(deviceName string, pin string) string {
 
-	dd := k.controller.GetDevice(deviceId)
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -226,8 +224,8 @@ func (k *hkWrapper) PairSetup(deviceId string, pin string) string {
 	return responseResult("paired")
 }
 
-func (k *hkWrapper) PairVerify(deviceId string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) PairVerify(deviceName string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -239,8 +237,8 @@ func (k *hkWrapper) PairVerify(deviceId string) string {
 	return responseResult("verified")
 }
 
-func (k *hkWrapper) Unpair(deviceId string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) Unpair(deviceName string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -252,8 +250,8 @@ func (k *hkWrapper) Unpair(deviceId string) string {
 	return responseResult("unpaired")
 }
 
-func (k *hkWrapper) PairSetupAndVerify(deviceId string, pin string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) PairSetupAndVerify(deviceName string, pin string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -265,24 +263,24 @@ func (k *hkWrapper) PairSetupAndVerify(deviceId string, pin string) string {
 	return responseResult("verified")
 }
 
-func (k *hkWrapper) GetDeviceInfo(deviceId string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) GetDeviceInfo(deviceName string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
 	return responseResult(convertDevice(dd))
 }
 
-func (k *hkWrapper) ListAccessories(deviceId string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) ListAccessories(deviceName string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
 	return responseResult(dd.Accessories())
 }
 
-func (k *hkWrapper) GetAccessoryInfo(deviceId string, aid int) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) GetAccessoryInfo(deviceName string, aid int) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -294,8 +292,8 @@ func (k *hkWrapper) GetAccessoryInfo(deviceId string, aid int) string {
 	return responseError("accessory not found")
 }
 
-func (k *hkWrapper) GetAccessoriesReq(deviceId string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) GetAccessoriesReq(deviceName string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -306,8 +304,8 @@ func (k *hkWrapper) GetAccessoriesReq(deviceId string) string {
 	return responseResult(dd.Accessories())
 }
 
-func (k *hkWrapper) GetCharacteristicReq(deviceId string, aid int, iid int) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) GetCharacteristicReq(deviceName string, aid int, iid int) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -318,8 +316,8 @@ func (k *hkWrapper) GetCharacteristicReq(deviceId string, aid int, iid int) stri
 	return responseResult(characteristic)
 }
 
-func (k *hkWrapper) PutCharacteristicReq(deviceId string, aid int, iid int, value string) string {
-	dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) PutCharacteristicReq(deviceName string, aid int, iid int, value string) string {
+	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
 		return responseError("device not found")
 	}
@@ -335,8 +333,8 @@ func (k *hkWrapper) PutCharacteristicReq(deviceId string, aid int, iid int, valu
 	return responseResult(vv)
 }
 
-func (k *hkWrapper) SubscribeToCharacteristic(deviceId string, aid int, iid int) string {
-	//dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) SubscribeToCharacteristic(deviceName string, aid int, iid int) string {
+	//dd := k.controller.GetDevice(deviceName)
 	//if dd == nil {
 	//	return responseError("device not found")
 	//}
@@ -346,8 +344,8 @@ func (k *hkWrapper) SubscribeToCharacteristic(deviceId string, aid int, iid int)
 	//}
 	return responseError("implement me")
 }
-func (k *hkWrapper) UnsubscribeFromCharacteristic(deviceId string, aid int, iid int) string {
-	//dd := k.controller.GetDevice(deviceId)
+func (k *hkWrapper) UnsubscribeFromCharacteristic(deviceName string, aid int, iid int) string {
+	//dd := k.controller.GetDevice(deviceName)
 	//if dd == nil {
 	//	return responseError("device not found")
 	//}
