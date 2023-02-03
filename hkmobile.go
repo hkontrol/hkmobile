@@ -83,8 +83,21 @@ func (k *hkWrapper) StartDiscovery() string {
 	k.cancelDiscovery = cancel
 	disco, lost := k.controller.StartDiscoveryWithContext(ctx)
 
+	verify := func(d *hkontroller.Device) {
+		ctx := context.Background()
+		err := d.PairSetupAndVerify(ctx, "pin doesn't matter if already paired", 5*time.Second)
+		if err != nil {
+			fmt.Println("pair-verify err: ", err)
+			return
+		}
+		fmt.Println("should be connected now")
+	}
+
 	go func() {
 		for d := range disco {
+			if d.IsPaired() {
+				go verify(d)
+			}
 
 			// catch events and pass to receiver
 			go func() {
