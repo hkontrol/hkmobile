@@ -37,6 +37,8 @@ class HkViewModel: ViewModel() {
         }
 
         println("HkViewModel created")
+        println("ALL DEVICES: ${HkSdk.controller?.allDevices}")
+        HkSdk.start()
     }
     fun setText(text: String) {
         _uiState.value = HkUiState(text, _uiState.value.discoveredDevices)

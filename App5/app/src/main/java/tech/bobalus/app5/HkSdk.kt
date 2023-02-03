@@ -2,10 +2,8 @@ package tech.bobalus.app5
 
 import hkmobile.CompatibleKontroller
 import hkmobile.MobileReceiver
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 object HkSdk : MobileReceiver {
@@ -33,12 +31,14 @@ object HkSdk : MobileReceiver {
     init {
         println("HkSdk object created")
     }
-    fun start(name: String = "app5", configDir: String) {
+    fun configure(name: String = "app5", configDir: String) {
         if (controller == null) {
             controller = hkmobile.Hkmobile.newCompatibleController(name, configDir, this)
-            controller?.startDiscovery()
             println("initialized controller")
         }
+    }
+    fun start() {
+        controller?.startDiscovery()
     }
     override fun onCharacteristic(p0: String?) {
         TODO("Not yet implemented")
@@ -56,7 +56,7 @@ object HkSdk : MobileReceiver {
         println("discovered $p0")
         runBlocking {
             if (p0 != null) {
-                _discoverEvents.emit(p0)
+                //_discoverEvents.emit(p0)
             }
         }
     }
@@ -65,7 +65,7 @@ object HkSdk : MobileReceiver {
         println("lost $p0")
         runBlocking {
             if (p0 != null) {
-                _lostEvents.emit(p0)
+                //_lostEvents.emit(p0)
             }
         }
     }
