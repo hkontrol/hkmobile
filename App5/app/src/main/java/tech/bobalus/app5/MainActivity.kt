@@ -33,58 +33,6 @@ class MainActivity : ComponentActivity() {
         HkSdk.configure("app5", filesDir.absolutePath)
         HkSdk.start()
 
-//        setContent {
-//            val selectedDevice = remember { mutableStateOf("") }
-//            val enteredPin = remember { mutableStateOf("") }
-//
-//            App5Theme {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colors.background
-//                ) {
-//                    DiscoveredDevices(
-//                        hkViewModel = viewModel(),
-//                        onDeviceSelect = {
-//                            selectedDevice.value = it
-//                        })
-//                    if (selectedDevice.value != "") {
-//                        AlertDialog(
-//                            title = {
-//                                Text("Pair <${selectedDevice.value}>")
-//                            },
-//                            text = {
-//                                OutlinedTextField(value = enteredPin.value,
-//                                    onValueChange = {
-//                                        enteredPin.value = it
-//                                    },)
-//                            },
-//                            onDismissRequest = { selectedDevice.value = "" },
-//                            confirmButton = {
-//                                TextButton(onClick = {
-//                                    selectedDevice.value = ""
-//                                    enteredPin.value = ""
-//                                } ) {
-//                                    Text("Cancel")
-//                                }
-//                                TextButton(onClick = {
-////                                    val result = HkSdk.controller?.pairSetupAndVerify(selectedDevice.value, enteredPin.value)
-//                                    var result = HkSdk.controller?.pairSetup(selectedDevice.value, enteredPin.value)
-//                                    Toast.makeText(this, result, Toast.LENGTH_SHORT).show()
-//                                    result = HkSdk.controller?.pairVerify(selectedDevice.value)
-//                                    Toast.makeText(this, result, Toast.LENGTH_SHORT).show()
-//
-//                                    selectedDevice.value = ""
-//                                    enteredPin.value = ""
-//                                } ) {
-//                                    Text("Pair")
-//                                }
-//                            },
-//                            dismissButton = {}
-//                        )
-//                    }
-//                }
-//            }
-//        }
         setContent {
             App5Theme {
                 Surface(
@@ -97,23 +45,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-//@Composable
-//fun DiscoveredDevices(modifier: Modifier = Modifier,
-//                      hkViewModel: HkViewModel = viewModel(),
-//                      onDeviceSelect: (String)-> Unit) {
-//
-//    val uiState = hkViewModel.uiState.collectAsState()
-//    val lazyListState: LazyListState = rememberLazyListState()
-//
-//    println("am I drawin?")
-//    LazyColumn(state = lazyListState) {
-//        items(uiState.value.discoveredDevices) { t ->
-//            OutlinedButton(onClick = {
-//                onDeviceSelect(t)
-//            }) {
-//                Text(text = t)
-//            }
-//        }
-//    }
-//}

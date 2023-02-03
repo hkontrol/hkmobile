@@ -2,7 +2,6 @@ package tech.bobalus.app5
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -54,6 +53,13 @@ data class Device(
     @Json(name = "pairing") val pairing: Pairing?,
     @Json(name = "dns_service_name") val dnsServiceName: String,
     @Json(name = "txt") val txt: Map<String, String>?,
+) {
+    constructor() : this("", "", false, false, false, null, "", null)
+}
+
+data class Response(
+    @Json(name = "error") val error: String,
+    @Json(name = "result") val result: Any?
 )
 
 object HkSdk : MobileReceiver {
@@ -83,7 +89,6 @@ object HkSdk : MobileReceiver {
 
     init {
         println("HkSdk object created")
-
     }
     fun configure(name: String = "app5", configDir: String) {
         if (controller == null) {
@@ -93,6 +98,7 @@ object HkSdk : MobileReceiver {
     }
     fun start() {
         controller?.startDiscovery()
+        println("mdns discovery started")
     }
     override fun onCharacteristic(p0: String?) {
         TODO("Not yet implemented")
@@ -102,11 +108,15 @@ object HkSdk : MobileReceiver {
     override fun onClose(p0: String?) {
         runBlocking {
             if (p0 != null) {
-                val jsonAdapter: JsonAdapter<Device> = moshi.adapter<Device>()
-                val device = jsonAdapter.fromJson(p0)
-                println(device)
-                if (device != null) {
-                    _closedEvents.emit(device)
+                try {
+                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter<Device>()
+                    val device = jsonAdapter.fromJson(p0)
+                    println("closed $device")
+                    if (device != null) {
+                        _closedEvents.emit(device)
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
             }
         }
@@ -117,15 +127,12 @@ object HkSdk : MobileReceiver {
         println("discovered $p0")
         runBlocking {
             if (p0 != null) {
-
                 try {
                     val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
                     val device = jsonAdapter.fromJson(p0)
                     if (device != null) {
-                        println("tryin to parse json: result is good <${device.name}>")
                         _discoverEvents.emit(device)
                     }
-                    println("tryin to parse json: result is null")
                 } catch (e: Exception) {
                     println(e.message)
                 }
@@ -135,14 +142,17 @@ object HkSdk : MobileReceiver {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onLost(p0: String?) {
-        println("lost $p0")
         runBlocking {
             if (p0 != null) {
-                val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
-                val device = jsonAdapter.fromJson(p0)
-                println(device)
-                if (device != null) {
-                    _lostEvents.emit(device)
+                try {
+                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
+                    val device = jsonAdapter.fromJson(p0)
+                    println("lost $device")
+                    if (device != null) {
+                        _lostEvents.emit(device)
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
             }
         }
@@ -152,11 +162,15 @@ object HkSdk : MobileReceiver {
     override fun onPaired(p0: String?) {
         runBlocking {
             if (p0 != null) {
-                val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
-                val device = jsonAdapter.fromJson(p0)
-                println(device)
-                if (device != null) {
-                    _pairedEvents.emit(device)
+                try {
+                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
+                    val device = jsonAdapter.fromJson(p0)
+                    println("paired $device")
+                    if (device != null) {
+                        _pairedEvents.emit(device)
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
             }
         }
@@ -166,11 +180,15 @@ object HkSdk : MobileReceiver {
     override fun onUnpaired(p0: String?) {
         runBlocking {
             if (p0 != null) {
-                val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
-                val device = jsonAdapter.fromJson(p0)
-                println(device)
-                if (device != null) {
-                    _unpairedEvents.emit(device)
+                try {
+                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
+                    val device = jsonAdapter.fromJson(p0)
+                    println("unpaired $device")
+                    if (device != null) {
+                        _unpairedEvents.emit(device)
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
             }
         }
@@ -180,13 +198,39 @@ object HkSdk : MobileReceiver {
     override fun onVerified(p0: String?) {
         runBlocking {
             if (p0 != null) {
-                val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
-                val device = jsonAdapter.fromJson(p0)
-                println(device)
-                if (device != null) {
-                    _verifiedEvents.emit(device)
+                try {
+                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
+                    val device = jsonAdapter.fromJson(p0)
+                    println("verified $device")
+                    if (device != null) {
+                        _verifiedEvents.emit(device)
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
             }
         }
+    }
+
+    // api funcs
+    @OptIn(ExperimentalStdlibApi::class)
+    fun getAllDevices() : List<Device> {
+        val jjResponse = controller?.allDevices
+        val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
+        val response = jsonAdapter.fromJson(jjResponse.toString())
+        if (response?.error != "") {
+            return emptyList()
+        }
+        // back to json
+        val anyJsonAdapter: JsonAdapter<Any> = moshi.adapter()
+        val jjResult = anyJsonAdapter.toJson(response.result)
+
+        // then parse into list
+        val devListJsonAdapter: JsonAdapter<List<Device>> = moshi.adapter()
+        val devices = devListJsonAdapter.fromJson(jjResult)
+        if (devices != null) {
+            return devices
+        }
+        return emptyList()
     }
 }
