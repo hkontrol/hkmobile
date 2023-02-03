@@ -42,10 +42,9 @@ import kotlinx.coroutines.runBlocking
 
  */
 
-data class Pairing(@Json(name = "id") val id: String?, @Json(name = "pubk") val publicKey: String?)
+data class Pairing(@Json(name = "name") val name: String?, @Json(name = "id") val id: String?, @Json(name = "pubk") val publicKey: String?)
 
 data class Device(
-    @Json(name = "id") val id: String,
     @Json(name = "name") val name: String,
     @Json(name = "discovered") val discovered: Boolean,
     @Json(name = "paired") val paired: Boolean,
@@ -54,7 +53,7 @@ data class Device(
     @Json(name = "dns_service_name") val dnsServiceName: String,
     @Json(name = "txt") val txt: Map<String, String>?,
 ) {
-    constructor() : this("", "", false, false, false, null, "", null)
+    constructor() : this( "", false, false, false, null, "", null)
 }
 
 data class Response(
