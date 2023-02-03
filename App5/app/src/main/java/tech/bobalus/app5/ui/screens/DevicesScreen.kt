@@ -79,7 +79,7 @@ fun DevicesScreen() {
                     Text("Unpair <${selectedDevice.value}>")
                 },
                 text = {
-                    Text(text = "really unpair?",)
+                    Text(text = "really unpair? if device is offline then you may need reset it's state.")
                 },
                 onDismissRequest = { selectedDevice.value = Device() },
                 confirmButton = {
@@ -97,7 +97,7 @@ fun DevicesScreen() {
                         selectedDevice.value = Device()
                         enteredPin.value = ""
                     } ) {
-                        Text("UnpairPair")
+                        Text("Unpair")
                     }
 
                 },

@@ -17,7 +17,10 @@ class DevicesViewModel: ViewModel() {
 
     private val _uiState = MutableStateFlow(DevicesUiState(ArrayList()))
     val uiState: StateFlow<DevicesUiState> = _uiState.asStateFlow()
+
     init {
+
+        // register listeners
 
         scope.launch {
             HkSdk.discoverEvents
@@ -75,10 +78,8 @@ class DevicesViewModel: ViewModel() {
         }
 
         println("HkViewModel created")
-        //println("ALL DEVICES: ${HkSdk.getAllDevices()}")
 
         var all = HkSdk.getAllDevices()
-        println("getAllDevices: $all")
 
         val allIt = all.iterator()
         val l = _uiState.value.discoveredDevices
@@ -88,14 +89,12 @@ class DevicesViewModel: ViewModel() {
 
         _uiState.value = DevicesUiState(l)
     }
-    fun setText(text: String) {
-        _uiState.value = DevicesUiState(uiState.value.discoveredDevices)
-    }
+
     fun addDevice(device: Device) {
         removeDevice(device) // in case of duplicates
         _uiState.value.discoveredDevices.add(device)
-        //_uiState.tryEmit(_uiState.value.copy())
-        _uiState.value = DevicesUiState(_uiState.value.discoveredDevices)
+        // without toMutableList ui is not updated
+        _uiState.value = DevicesUiState(_uiState.value.discoveredDevices.toMutableList())
     }
 
     fun removeDevice(device: Device) {
@@ -106,11 +105,7 @@ class DevicesViewModel: ViewModel() {
                 each.remove()
             }
         }
-        _uiState.value = DevicesUiState(l)
+        _uiState.value = DevicesUiState(l.toMutableList())
     }
-    fun reset() {
-        val l = _uiState.value.discoveredDevices
-        l.clear()
-        _uiState.value = DevicesUiState(l)
-    }
+
 }

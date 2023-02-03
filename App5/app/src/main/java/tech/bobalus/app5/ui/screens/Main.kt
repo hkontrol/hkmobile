@@ -27,7 +27,7 @@ fun MainScreen() {
     App5Theme {
         val navController = rememberNavController()
         Scaffold(
-//            topBar = { TopBar() },
+            topBar = { TopBar() },
             bottomBar = { BottomNavigationBar(navController) },
             content = { padding ->
                 Box(modifier = Modifier.padding(padding)) {
@@ -56,7 +56,7 @@ fun Navigation(navController: NavHostController) {
 @Composable
 fun TopBar() {
     TopAppBar(
-        title = { Text(text = stringResource(R.string.app_name), fontSize = 14.sp) },
+        title = { Text(text = stringResource(R.string.app_name)) },
     )
 }
 
