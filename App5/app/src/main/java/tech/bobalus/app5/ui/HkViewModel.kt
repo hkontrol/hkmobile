@@ -3,6 +3,7 @@ package tech.bobalus.app5.ui
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import tech.bobalus.app5.Device
 import tech.bobalus.app5.HkSdk
 
 class HkViewModel: ViewModel() {
@@ -38,20 +39,19 @@ class HkViewModel: ViewModel() {
 
         println("HkViewModel created")
         println("ALL DEVICES: ${HkSdk.controller?.allDevices}")
-        HkSdk.start()
     }
     fun setText(text: String) {
         _uiState.value = HkUiState(text, _uiState.value.discoveredDevices)
         _uiState.value = _uiState.value
     }
-    fun addDevice(name: String) {
-        _uiState.value.discoveredDevices.add(name)
+    fun addDevice(device: Device) {
+        _uiState.value.discoveredDevices.add(device.name)
         //_uiState.tryEmit(_uiState.value.copy())
         _uiState.value = HkUiState(_uiState.value.enteredText, _uiState.value.discoveredDevices)
     }
-    fun removeDevice(name: String) {
+    fun removeDevice(device: Device) {
         val l =_uiState.value.discoveredDevices
-        while (l.remove(name)) {
+        while (l.remove(device.name)) {
             continue
         }
         _uiState.value = HkUiState(_uiState.value.enteredText, l)

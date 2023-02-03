@@ -1,6 +1,5 @@
 package tech.bobalus.app5
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -12,10 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import tech.bobalus.app5.ui.screens.MainScreen
 import tech.bobalus.app5.ui.theme.App5Theme
 
@@ -36,6 +31,7 @@ class MainActivity : ComponentActivity() {
         multicastLock.acquire()
 
         HkSdk.configure("app5", filesDir.absolutePath)
+        HkSdk.start()
 
 //        setContent {
 //            val selectedDevice = remember { mutableStateOf("") }
