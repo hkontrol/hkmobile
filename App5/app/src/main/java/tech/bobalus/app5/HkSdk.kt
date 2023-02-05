@@ -59,25 +59,25 @@ data class Device(
 }
 
 data class Characteristic(
-    @Json(name="aid") val aid: Int,
-    @Json(name="iid") val iid: Int,
+    @Json(name="aid") val aid: Long,
+    @Json(name="iid") val iid: Long,
     @Json(name="type") val type: String,
-    @Json(name="value") val value: Any?,
+    @Json(name="value") var value: Any?,
     @Json(name="perms") val permissions: List<String>?,
     @Json(name="format") val format: String?,
-    @Json(name="maxLen") val maxLem: Int?,
+    @Json(name="maxLen") val maxLem: Long?,
     // TODO another fields
 )
 
 data class Service(
-    @Json(name="iid") val iid: Int,
+    @Json(name="iid") val iid: Long,
     @Json(name="type") val type: String,
     @Json(name="characteristics") val characteristics: List<Characteristic>,
 )
 
 data class Accessory(
     @Json(ignore = true) var device: String = "", // assigned in this module
-    @Json(name = "aid") val id: Int,
+    @Json(name = "aid") val id: Long,
     @Json(name="services") val services: List<Service>
 )
 
@@ -288,14 +288,14 @@ object HkSdk : MobileReceiver {
         if (response?.error != "") {
             println("error getting accessories: ${response?.error}")
         }
-        println("error getting accessories: ${response?.result}")
+        println("success for getting accessories")
 
         val t3 = measureTimeMillis {
             jjResponse = controller?.listAccessories(device.name)
         }
         println(">> t3 = measure controller.listAccessories(${device.name}) =$t3")
 
-        println(jjResponse)
+        //println(jjResponse)
 
         // back to json. is there a way to avoid it?
         val anyJsonAdapter: JsonAdapter<Any> = moshi.adapter()

@@ -1,5 +1,7 @@
 package tech.bobalus.app5.model
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +53,10 @@ class HomeViewModel: ViewModel() {
                 .collect()
         }
 
+        refresh()
+    }
 
+    fun refresh() {
         val devices = HkSdk.getAllDevices().iterator()
         while (devices.hasNext()) {
             val dd = devices.next()
