@@ -36,6 +36,8 @@ type CompatibleKontroller interface {
 	GetDeviceInfo(deviceName string) string
 	ListAccessories(deviceName string) string
 	GetAccessoryInfo(deviceName string, aid int) string
+	FindService(deviceName string, aid int, stype string) string
+	FindCharacteristic(deviceName string, aid int, stype string, ctype string) string
 
 	GetAccessoriesReq(deviceName string) string
 	GetCharacteristicReq(deviceName string, aid int, iid int) string
@@ -154,14 +156,12 @@ func (k *hkWrapper) StartDiscovery() string {
 
 	go func() {
 		for d := range lost {
-			go func() {
-				cc := convertDevice(d)
-				jj, err := json.Marshal(cc)
-				if err != nil {
-					return
-				}
-				k.receiver.OnLost(string(jj))
-			}()
+			cc := convertDevice(d)
+			jj, err := json.Marshal(cc)
+			if err != nil {
+				return
+			}
+			k.receiver.OnLost(string(jj))
 		}
 	}()
 
@@ -363,6 +363,46 @@ func (k *hkWrapper) UnsubscribeFromCharacteristic(deviceName string, aid int, ii
 	//	return responseError("device not found")
 	//}
 	return responseError("implement me")
+}
+
+func (k *hkWrapper) FindService(deviceName string, aid int, stype string) string {
+	dd := k.controller.GetDevice(deviceName)
+	if dd == nil {
+		return responseError("device not found")
+	}
+	for _, aa := range dd.Accessories() {
+		if int(aa.Id) != aid {
+			continue
+		}
+		ss := aa.GetService(hkontroller.HapServiceType(stype))
+		if ss == nil {
+			return responseError("service not found")
+		}
+		return responseResult(ss)
+	}
+	return responseError("accessory not found")
+}
+
+func (k *hkWrapper) FindCharacteristic(deviceName string, aid int, stype string, ctype string) string {
+	dd := k.controller.GetDevice(deviceName)
+	if dd == nil {
+		return responseError("device not found")
+	}
+	for _, aa := range dd.Accessories() {
+		if int(aa.Id) != aid {
+			continue
+		}
+		ss := aa.GetService(hkontroller.HapServiceType(stype))
+		if ss == nil {
+			return responseError("service not found")
+		}
+		cc := ss.GetCharacteristic(hkontroller.HapCharacteristicType(ctype))
+		if cc == nil {
+			return responseError("characteristic not found")
+		}
+		responseResult(cc)
+	}
+	return responseError("accessory not found")
 }
 
 // NewCompatibleController returns wrapper aroung hkontroller.Controller.
