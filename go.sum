@@ -8,6 +8,8 @@ github.com/hkontrol/hkontroller v0.0.0-20230207124118-52871843d808 h1:YW+15JsU2I
 github.com/hkontrol/hkontroller v0.0.0-20230207124118-52871843d808/go.mod h1:VBxo6acCJEqX/CrwNgOfmS9nK5ShkNG5JIgR29Dj/p8=
 github.com/hkontrol/hkontroller v0.0.0-20230207134540-baa2a1a248ed h1:POwWyXzYZuW7B+iTS0obZX/jBIzNql8xQq4l2vwm8K0=
 github.com/hkontrol/hkontroller v0.0.0-20230207134540-baa2a1a248ed/go.mod h1:VBxo6acCJEqX/CrwNgOfmS9nK5ShkNG5JIgR29Dj/p8=
+github.com/hkontrol/hkontroller v0.0.0-20230207155650-4e72c88351db h1:Ij0XEH75lqRIN1mT077XzFaWEzmiNDWVzopOZIGMIUQ=
+github.com/hkontrol/hkontroller v0.0.0-20230207155650-4e72c88351db/go.mod h1:VBxo6acCJEqX/CrwNgOfmS9nK5ShkNG5JIgR29Dj/p8=
 github.com/miekg/dns v1.1.50 h1:DQUfb9uc6smULcREF09Uc+/Gd46YWqJd5DbpPE9xkcA=
 github.com/miekg/dns v1.1.50/go.mod h1:e3IlAVfNqAllflbibAZEWOXOQ+Ynzk/dDozDxY7XnME=
 github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee h1:IquUs3fIykn10zWDIyddanhpTqBvAHMaPnFhQuyYw5U=
