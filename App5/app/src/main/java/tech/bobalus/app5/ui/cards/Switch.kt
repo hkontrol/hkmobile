@@ -2,14 +2,12 @@ package tech.bobalus.app5.ui.cards;
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,19 +34,22 @@ fun SwitchCardPrimary(
     }
 
     var onState by remember { mutableStateOf(onValue) }
+    val onClick: () -> Unit = {
+        val newValue = !onState
+        HkSdk.controller?.putCharacteristicReq(
+            accessory.device,
+            accessory.id, cc.iid, newValue.toString()
+        )
+        cc.value = newValue
+        onState = newValue
+    }
     Card(
         elevation = 4.dp,
         modifier = Modifier
             .padding(4.dp)
             .combinedClickable(
                 onClick = {
-                    val newValue = !onState
-                    HkSdk.controller?.putCharacteristicReq(
-                        accessory.device,
-                        accessory.id, cc.iid, newValue.toString()
-                    )
-                    cc.value = newValue
-                    onState = newValue
+                    onClick()
                 }, onLongClick = {
                     println("long click")
                     if (onLongClick != null) {
@@ -57,13 +58,17 @@ fun SwitchCardPrimary(
                 }
             )
     ) {
-        Column(Modifier.padding(4.dp)) {
+        Row(
+            Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             HkSdk.getAccessoryName(accessory)?.let {
                 Text(
                     text = it,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Switch(checked = onState, onCheckedChange = {})
+                Switch(checked = onState, onCheckedChange = { onClick() })
             }
         }
     }

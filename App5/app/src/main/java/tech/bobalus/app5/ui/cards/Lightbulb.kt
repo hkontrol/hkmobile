@@ -2,13 +2,12 @@ package tech.bobalus.app5.ui.cards
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,13 +58,17 @@ fun LightbulbCardPrimary(
                 }
             )
     ) {
-        Column(Modifier.padding(4.dp)) {
+        Row(
+            Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             HkSdk.getAccessoryName(accessory)?.let {
                 Text(
                     text = it,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Switch(checked = onState, onCheckedChange = {onClick()})
+                Switch(checked = onState, onCheckedChange = { onClick() })
             }
         }
     }
