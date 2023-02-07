@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hkontrol/hkontroller"
+	"github.com/olebedev/emitter"
 	"path"
 	"time"
 )
@@ -351,6 +352,34 @@ func (k *hkWrapper) PutCharacteristicReq(deviceName string, aid int, iid int, va
 	return responseResult(vv)
 }
 
+type characteristicEvent struct {
+	Dev string      `json:"device"`
+	Aid interface{} `json:"aid"`
+	Iid interface{} `json:"iid"`
+	Val interface{} `json:"value"`
+}
+
+func (k *hkWrapper) onEvent(deviceName string, e emitter.Event) {
+	if len(e.Args) != 3 {
+		return
+	}
+
+	ev := characteristicEvent{
+		Dev: deviceName,
+		Aid: e.Args[0],
+		Iid: e.Args[1],
+		Val: e.Args[2],
+	}
+
+	jj, err := json.Marshal(ev)
+	if err != nil {
+		fmt.Println("cannot marshal characteristic event: %s", err.Error())
+		return
+	}
+
+	k.receiver.OnCharacteristic(string(jj))
+}
+
 func (k *hkWrapper) SubscribeToAllEvents(deviceName string) string {
 	dd := k.controller.GetDevice(deviceName)
 	if dd == nil {
@@ -362,8 +391,7 @@ func (k *hkWrapper) SubscribeToAllEvents(deviceName string) string {
 	}
 	go func() {
 		for e := range events {
-			fmt.Println(e.Args)
-
+			k.onEvent(deviceName, e)
 		}
 	}()
 	return responseResult("success")
@@ -381,7 +409,7 @@ func (k *hkWrapper) SubscribeToCharacteristic(deviceName string, aid int, iid in
 	}
 	go func() {
 		for e := range events {
-			fmt.Println(e.Args)
+			k.onEvent(deviceName, e)
 		}
 	}()
 	return responseResult("success")
