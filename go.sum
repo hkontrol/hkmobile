@@ -6,6 +6,8 @@ github.com/hkontrol/hkontroller v0.0.0-20230203183155-ff245ec46116 h1:VijKy488KC
 github.com/hkontrol/hkontroller v0.0.0-20230203183155-ff245ec46116/go.mod h1:VBxo6acCJEqX/CrwNgOfmS9nK5ShkNG5JIgR29Dj/p8=
 github.com/hkontrol/hkontroller v0.0.0-20230207124118-52871843d808 h1:YW+15JsU2IVLAOI4+2cI1l4jXZDopOKtUEmgxxsC1vc=
 github.com/hkontrol/hkontroller v0.0.0-20230207124118-52871843d808/go.mod h1:VBxo6acCJEqX/CrwNgOfmS9nK5ShkNG5JIgR29Dj/p8=
+github.com/hkontrol/hkontroller v0.0.0-20230207134540-baa2a1a248ed h1:POwWyXzYZuW7B+iTS0obZX/jBIzNql8xQq4l2vwm8K0=
+github.com/hkontrol/hkontroller v0.0.0-20230207134540-baa2a1a248ed/go.mod h1:VBxo6acCJEqX/CrwNgOfmS9nK5ShkNG5JIgR29Dj/p8=
 github.com/miekg/dns v1.1.50 h1:DQUfb9uc6smULcREF09Uc+/Gd46YWqJd5DbpPE9xkcA=
 github.com/miekg/dns v1.1.50/go.mod h1:e3IlAVfNqAllflbibAZEWOXOQ+Ynzk/dDozDxY7XnME=
 github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee h1:IquUs3fIykn10zWDIyddanhpTqBvAHMaPnFhQuyYw5U=
@@ -26,6 +28,8 @@ golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8U
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.5.0 h1:U/0M97KRkSFvyD/3FSmdP5W5swImpNgle/EHFhOsQPE=
 golang.org/x/crypto v0.5.0/go.mod h1:NK/OQwhpMQP3MwtdjgLlYHnH9ebylxKWv3e0fK+mkQU=
+golang.org/x/mobile v0.0.0-20221110043201-43a038452099 h1:aIu0lKmfdgtn2uTj7JI2oN4TUrQvgB+wzTPO23bCKt8=
+golang.org/x/mobile v0.0.0-20221110043201-43a038452099/go.mod h1:aAjjkJNdrh3PMckS4B10TGS2nag27cbKR1y2BpUxsiY=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.7.0 h1:LapD9S96VoQRhi/GrNTqeBJFrUjs5UHCAtTlgwA5oZA=
