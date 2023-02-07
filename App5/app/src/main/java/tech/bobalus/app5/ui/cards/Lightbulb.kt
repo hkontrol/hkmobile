@@ -25,12 +25,14 @@ fun LightbulbCardPrimary(
     onLongClick: ((Accessory) -> Unit)? = null,
 ) {
     val cc = HkSdk.findCharacteristic(service, Hkmobile.CType_On) ?: return
-    val onValue = cc.value
-        .toString()
-        .toBoolean()
-            || cc.value
-        .toString()
-        .equals("1")
+    var onValue = false
+    when (cc.value) {
+        is Boolean -> onValue = cc.value as Boolean
+        is Int -> onValue = cc.value == 1
+        is Long -> onValue = cc.value == 1L
+        is Double -> onValue = cc.value == 1.0
+        is Float -> onValue = cc.value == 1.0F
+    }
 
     var onState by remember { mutableStateOf(onValue) }
     val onClick : () -> Unit = {
