@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import tech.bobalus.app5.model.HomeViewModel
 import tech.bobalus.app5.ui.cards.AccessoryCard
 
@@ -37,20 +39,24 @@ fun HomeView(homeViewModel: HomeViewModel = viewModel()) {
     val uiState = homeViewModel.uiState.collectAsState()
     val lazyGridState: LazyGridState = rememberLazyGridState()
     var refreshing by remember { mutableStateOf(false) }
+    val refreshScope = rememberCoroutineScope()
 
-    val pullRefreshState = rememberPullRefreshState(refreshing, {
+    fun refresh() = refreshScope.launch {
         refreshing = true
         homeViewModel.refresh()
+        delay(300) // let it be here
         refreshing = false
-    })
+    }
+
+    val pullRefreshState = rememberPullRefreshState(refreshing, ::refresh)
 
     Box(Modifier.pullRefresh(pullRefreshState)) {
-        if (!refreshing) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 128.dp),
-                state = lazyGridState,
-                modifier = Modifier.fillMaxSize(),
-            ) {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 128.dp),
+            state = lazyGridState,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            if (!refreshing) {
                 items(uiState.value.accessories) { t ->
                     AccessoryCard(accessory = t)
                 }
