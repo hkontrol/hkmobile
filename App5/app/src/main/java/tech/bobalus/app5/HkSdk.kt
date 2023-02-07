@@ -1,12 +1,12 @@
 package tech.bobalus.app5
 
-import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import hkmobile.CompatibleKontroller
+import hkmobile.Hkmobile
 import hkmobile.MobileReceiver
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -73,6 +73,8 @@ data class Service(
     @Json(name="iid") val iid: Long,
     @Json(name="type") val type: String,
     @Json(name="characteristics") val characteristics: List<Characteristic>,
+    @Json(name="primary") val primary: Boolean?,
+    @Json(name="hidden") val hidden: Boolean?,
 )
 
 data class Accessory(
@@ -322,5 +324,56 @@ object HkSdk : MobileReceiver {
         }
 
         return accessories
+    }
+
+    fun findService(accessory: Accessory, serviceType: String) : Service? {
+        val it = accessory.services.iterator()
+        while (it.hasNext()) {
+            val srv = it.next()
+            if (srv.type == serviceType) {
+                return srv
+            }
+        }
+        return null
+    }
+    fun findCharacteristic(service: Service, characteristicsType: String) : Characteristic? {
+        val it = service.characteristics.iterator()
+        while (it.hasNext()) {
+            val chr = it.next()
+            if (chr.type == characteristicsType) {
+                return chr
+            }
+        }
+
+        return null
+    }
+    fun getAccessoryName(accessory: Accessory): String? {
+        val ss = HkSdk.findService(accessory, Hkmobile.SType_AccessoryInfo) ?: return null
+        val cc = HkSdk.findCharacteristic(ss, Hkmobile.CType_Name) ?: return null
+        return cc.value.toString()
+    }
+
+    fun findPrimaryService(accessory: Accessory): Service? {
+        // first, try to find directly
+        var it = accessory.services.iterator()
+        while (it.hasNext()) {
+            val ss = it.next()
+            if (ss.primary == true) {
+                return ss
+            }
+        }
+
+        // if not service with primary field found
+        // then just return first available after AccessoryInfo
+        it = accessory.services.iterator()
+        while (it.hasNext()) {
+            val ss = it.next()
+            if (ss.type == Hkmobile.SType_AccessoryInfo) {
+                continue
+            }
+            return ss
+        }
+
+        return null
     }
 }

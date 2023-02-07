@@ -1,9 +1,7 @@
 package tech.bobalus.app5.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -16,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import tech.bobalus.app5.Device
 import tech.bobalus.app5.HkSdk
@@ -43,10 +42,12 @@ fun DevicesScreen() {
                     Text("Pair <${selectedDevice.value}>")
                 },
                 text = {
-                    OutlinedTextField(value = enteredPin.value,
+                    OutlinedTextField(
+                        value = enteredPin.value,
                         onValueChange = {
                             enteredPin.value = it
-                        },)
+                        },
+                    )
                 },
                 onDismissRequest = { selectedDevice.value = Device() },
                 confirmButton = {
@@ -54,19 +55,20 @@ fun DevicesScreen() {
                     TextButton(onClick = {
                         selectedDevice.value = Device()
                         enteredPin.value = ""
-                    } ) {
+                    }) {
                         Text("Cancel")
                     }
 
                     TextButton(onClick = {
-                        var result = HkSdk.controller?.pairSetup(selectedDevice.value.name, enteredPin.value)
+                        var result =
+                            HkSdk.controller?.pairSetup(selectedDevice.value.name, enteredPin.value)
                         Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
                         result = HkSdk.controller?.pairVerify(selectedDevice.value.name)
                         Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
 
                         selectedDevice.value = Device()
                         enteredPin.value = ""
-                    } ) {
+                    }) {
                         Text("Pair")
                     }
 
@@ -86,7 +88,7 @@ fun DevicesScreen() {
 
                     TextButton(onClick = {
                         selectedDevice.value = Device()
-                    } ) {
+                    }) {
                         Text("Cancel")
                     }
 
@@ -96,7 +98,7 @@ fun DevicesScreen() {
 
                         selectedDevice.value = Device()
                         enteredPin.value = ""
-                    } ) {
+                    }) {
                         Text("Unpair")
                     }
 
@@ -107,21 +109,30 @@ fun DevicesScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DiscoveredDevices(modifier: Modifier = Modifier,
-                      devicesViewModel: DevicesViewModel = viewModel(),
-                      onDeviceSelect: (Device)-> Unit) {
+fun DiscoveredDevices(
+    modifier: Modifier = Modifier,
+    devicesViewModel: DevicesViewModel = viewModel(),
+    onDeviceSelect: (Device) -> Unit
+) {
 
     val uiState = devicesViewModel.uiState.collectAsState()
     val lazyListState: LazyListState = rememberLazyListState()
 
-    println("am I drawin?")
     LazyColumn(state = lazyListState) {
         items(uiState.value.discoveredDevices) { t ->
-            OutlinedButton(onClick = {
-                onDeviceSelect(t)
-            }) {
-                Column() {
+            Card(
+                elevation = 4.dp,
+                modifier = modifier
+                    .padding(4.dp)
+                    .fillMaxWidth(),
+                onClick = {
+                    onDeviceSelect(t)
+                }) {
+                Column(
+                    modifier = Modifier.padding(4.dp),
+                ) {
                     Text(text = t.name)
                     Text(text = "dnssd: ${t.dnsServiceName}")
                     Text(text = "paired: ${t.paired}")
