@@ -45,6 +45,11 @@ type CompatibleKontroller interface {
 
 	SubscribeToCharacteristic(deviceName string, aid int, iid int) string
 	UnsubscribeFromCharacteristic(deviceName string, aid int, iid int) string
+
+	// SubscribeToAllEvents supposed to be used instead of other subscribe methods.
+	// There is no unsubscribe method because subscriptions should not persist across session.
+	// So, channels should close automatically on device lost/unpaired event.
+	SubscribeToAllEvents(deviceName string) string
 }
 
 type Result struct {
@@ -346,23 +351,52 @@ func (k *hkWrapper) PutCharacteristicReq(deviceName string, aid int, iid int, va
 	return responseResult(vv)
 }
 
+func (k *hkWrapper) SubscribeToAllEvents(deviceName string) string {
+	dd := k.controller.GetDevice(deviceName)
+	if dd == nil {
+		return responseError("device not found")
+	}
+	events, err := dd.SubscribeToAllEvents()
+	if err != nil {
+		return responseError(fmt.Sprintf("cannot subscribe to device events: %s", fmt.Sprintf(err.Error())))
+	}
+	go func() {
+		for e := range events {
+			fmt.Println(e.Args)
+
+		}
+	}()
+	return responseResult("success")
+}
+
 func (k *hkWrapper) SubscribeToCharacteristic(deviceName string, aid int, iid int) string {
-	//dd := k.controller.GetDevice(deviceName)
-	//if dd == nil {
-	//	return responseError("device not found")
-	//}
-	//events, err := dd.SubscribeToEvents(aid, iid)
-	//if err != nil {
-	//	return ""
-	//}
-	return responseError("implement me")
+	dd := k.controller.GetDevice(deviceName)
+	if dd == nil {
+		return responseError("device not found")
+	}
+	events, err := dd.SubscribeToEvents(uint64(aid), uint64(iid))
+	if err != nil {
+		err = fmt.Errorf("cannot subscribe to characteristic events: %w", err)
+		return responseError(err.Error())
+	}
+	go func() {
+		for e := range events {
+			fmt.Println(e.Args)
+		}
+	}()
+	return responseResult("success")
 }
 func (k *hkWrapper) UnsubscribeFromCharacteristic(deviceName string, aid int, iid int) string {
-	//dd := k.controller.GetDevice(deviceName)
-	//if dd == nil {
-	//	return responseError("device not found")
-	//}
-	return responseError("implement me")
+	dd := k.controller.GetDevice(deviceName)
+	if dd == nil {
+		return responseError("device not found")
+	}
+	err := dd.UnsubscribeFromEvents(uint64(aid), uint64(iid))
+	if err != nil {
+		err = fmt.Errorf("cannot unsubscribe from characteristic events: %w", err)
+		return responseError(err.Error())
+	}
+	return responseResult("")
 }
 
 func (k *hkWrapper) FindService(deviceName string, aid int, stype string) string {

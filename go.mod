@@ -2,7 +2,7 @@ module github.com/hkontrol/hkmobile
 
 go 1.19
 
-require github.com/hkontrol/hkontroller v0.0.0-20230203183155-ff245ec46116
+require github.com/hkontrol/hkontroller v0.0.0-20230207124118-52871843d808
 
 require (
 	github.com/brutella/dnssd v1.2.5 // indirect
@@ -13,6 +13,6 @@ require (
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/tools v0.5.0 // indirect
 )
