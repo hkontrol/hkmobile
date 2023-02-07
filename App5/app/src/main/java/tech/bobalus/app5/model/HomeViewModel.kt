@@ -1,7 +1,5 @@
 package tech.bobalus.app5.model
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,19 +9,58 @@ import tech.bobalus.app5.Accessory
 import tech.bobalus.app5.Device
 import tech.bobalus.app5.HkSdk
 
-data class HomeUiState(
-                     val accessories : MutableList<Accessory>,
-                     val len: Int = accessories.size)
+// dunno why but on characteristic event
+// accessory uiState is not updated.
+// so counter helps
+object Counter {
+    var count: Int = 0
+}
 
-class HomeViewModel: ViewModel() {
+data class HomeUiState(
+    val accessories: MutableList<Accessory>,
+    val len: Int = accessories.size
+)
+
+class HomeViewModel : ViewModel() {
     protected val scope = CoroutineScope(Dispatchers.Main)
 
     private val _uiState = MutableStateFlow(HomeUiState(ArrayList()))
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-
         // register listeners
+        scope.launch {
+            HkSdk.characteristicEvents
+                .onEach { ev ->
+                    println("char event: $ev")
+
+                    val accs = _uiState.value.accessories
+                    accs.forEachIndexed { aix, accessory ->
+                        if (accessory.id == ev.aid) {
+                            accessory.services.forEachIndexed { six, service ->
+                                service.characteristics.forEachIndexed { cix, characteristic ->
+                                    if (characteristic.iid == ev.iid) {
+                                        accs[aix].services[six].characteristics[cix].value =
+                                            ev.value
+
+                                        Counter.count += 1; // <- somehow ui state is not updated without this
+                                        if (Counter.count == 100500) {
+                                            Counter.count = 0
+                                        }
+                                        _uiState.value = HomeUiState(
+                                            accs.toMutableList(),
+                                            Counter.count
+                                        )
+                                        _uiState.emit(_uiState.value)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .catch { e -> println(e.message) }
+                .collect()
+        }
 
         scope.launch {
             HkSdk.verifiedEvents
@@ -61,6 +98,7 @@ class HomeViewModel: ViewModel() {
         while (devices.hasNext()) {
             val dd = devices.next()
             if (dd.verified) {
+                HkSdk.getAccessoriesReq(dd)
                 addDeviceAccessories(dd)
             }
         }
@@ -68,8 +106,8 @@ class HomeViewModel: ViewModel() {
 
     private fun addDeviceAccessories(device: Device) {
         removeDeviceAccessories(device)  // in case of duplicates
-        val accs = HkSdk.getAccessories(device)
-        println("getDevAccessories: $accs")
+        val accs = HkSdk.listAccessories(device)
+
 
         _uiState.value.accessories.addAll(accs)
         // without toMutableList ui is not updated
@@ -77,8 +115,8 @@ class HomeViewModel: ViewModel() {
     }
 
     private fun removeDeviceAccessories(device: Device) {
-        val l =_uiState.value.accessories
-        val each  = l.iterator()
+        val l = _uiState.value.accessories
+        val each = l.iterator()
         while (each.hasNext()) {
             if (each.next().device == device.name) {
                 each.remove()
@@ -86,5 +124,5 @@ class HomeViewModel: ViewModel() {
         }
         _uiState.value = HomeUiState(l.toMutableList())
     }
-    
+
 }

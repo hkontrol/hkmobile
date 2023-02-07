@@ -19,7 +19,7 @@ fun SmartScreen() {
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Smart View",
+            text = "%)",
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center,

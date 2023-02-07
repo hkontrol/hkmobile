@@ -11,7 +11,6 @@ import hkmobile.MobileReceiver
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
-import kotlin.system.measureTimeMillis
 
 
 /**
@@ -87,6 +86,14 @@ data class Accessory(
     @Json(name = "services") val services: List<Service>
 )
 
+data class CharacteristicEvent(
+    @Json(name = "device") val deviceName: String,
+    @Json(name = "aid") val aid: Long,
+    @Json(name = "iid") val iid: Long,
+    @Json(name = "value") val value: Any
+)
+
+
 data class Response(
     @Json(name = "error") val error: String,
     @Json(name = "result") val result: Any?
@@ -114,6 +121,9 @@ object HkSdk : MobileReceiver {
     private val _closedEvents = MutableSharedFlow<Device>()
     val closedEvents = _closedEvents.asSharedFlow() // read-only public view
 
+    private val _characteristicEvents = MutableSharedFlow<CharacteristicEvent>()
+    val characteristicEvents = _characteristicEvents.asSharedFlow()
+
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
@@ -138,8 +148,21 @@ object HkSdk : MobileReceiver {
         running = true
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onCharacteristic(p0: String?) {
-        TODO("Not yet implemented")
+        runBlocking {
+            if (p0 != null) {
+                try {
+                    val jsonAdapter: JsonAdapter<CharacteristicEvent> = moshi.adapter()
+                    val event = jsonAdapter.fromJson(p0)
+                    if (event != null) {
+                        _characteristicEvents.emit(event)
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -147,7 +170,7 @@ object HkSdk : MobileReceiver {
         runBlocking {
             if (p0 != null) {
                 try {
-                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter<Device>()
+                    val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
                     val device = jsonAdapter.fromJson(p0)
                     println("closed $device")
                     if (device != null) {
@@ -235,12 +258,15 @@ object HkSdk : MobileReceiver {
     @OptIn(ExperimentalStdlibApi::class)
     override fun onVerified(p0: String?) {
         runBlocking {
+
             if (p0 != null) {
                 try {
                     val jsonAdapter: JsonAdapter<Device> = moshi.adapter()
                     val device = jsonAdapter.fromJson(p0)
                     println("verified $device")
                     if (device != null) {
+                        getAccessoriesReq(device) // so they are saved by hkontroller core module
+                        subscribeToEvents(device)
                         _verifiedEvents.emit(device)
                     }
                 } catch (e: Exception) {
@@ -253,90 +279,70 @@ object HkSdk : MobileReceiver {
     // api funcs
     @OptIn(ExperimentalStdlibApi::class)
     fun getAllDevices(): List<Device> {
-        var jjResponse: String?
-        val t1 = measureTimeMillis {
-            jjResponse = controller?.allDevices
-        }
-        println(">> t1 = measure controller.getAllDevs =$t1")
-
+        val jjResponse: String? = controller?.allDevices
         val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
-        var response: Response?
-
-        val t2 = measureTimeMillis { response = jsonAdapter.fromJson(jjResponse.toString()) }
-        println(">> t2 = measure parse allDevs response =$t2")
+        val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
         if (response?.error != "") {
             return emptyList()
         }
         // back to json
         val anyJsonAdapter: JsonAdapter<Any> = moshi.adapter()
-        var jjResult: String?
-        val t3 = measureTimeMillis {
-            jjResult = anyJsonAdapter.toJson(response!!.result)
-        }
-        println(">> t3 = measure response.result<any>.toJson =$t3")
-
+        val jjResult: String? = anyJsonAdapter.toJson(response.result)
         // then parse into list
         val devListJsonAdapter: JsonAdapter<List<Device>> = moshi.adapter()
-        var devices: List<Device>
-        val t4 = measureTimeMillis {
-            devices = devListJsonAdapter.fromJson(jjResult.toString())!!
-        }
-        println(">> t4 = measure from result string =$t4")
-
+        val devices: List<Device> = devListJsonAdapter.fromJson(jjResult.toString())!!
 
         return devices
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun getAccessories(device: Device): List<Accessory> {
-        var jjResponse: String?
-        val t1 = measureTimeMillis {
-            jjResponse = controller?.getAccessoriesReq(device.name)
-        }
-        println(">> t1 = measure controller.getAccessories(${device.name}) =$t1")
-
+    fun listAccessories(device: Device): List<Accessory> {
+        val jjResponse: String? = controller?.listAccessories(device.name)
         val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
-        var response: Response?
-
-        val t2 = measureTimeMillis { response = jsonAdapter.fromJson(jjResponse.toString()) }
-        println(">> t2 = measure parse accessories response =$t2")
-        if (response?.error != "") {
-            println("error getting accessories: ${response?.error}")
-        }
-        println("success for getting accessories")
-
-        val t3 = measureTimeMillis {
-            jjResponse = controller?.listAccessories(device.name)
-        }
-        println(">> t3 = measure controller.listAccessories(${device.name}) =$t3")
-
-        //println(jjResponse)
+        val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
 
         // back to json. is there a way to avoid it?
         val anyJsonAdapter: JsonAdapter<Any> = moshi.adapter()
-        var jjResult: String?
-        val t4 = measureTimeMillis {
-            jjResult = anyJsonAdapter.toJson(response!!.result)
-        }
-        println(">> t4 = measure response.result<any>.toJson =$t4")
-
+        val jjResult: String? = anyJsonAdapter.toJson(response!!.result)
 
         val accListJsonAdapter: JsonAdapter<List<Accessory>> = moshi.adapter()
         var accessories: List<Accessory> = emptyList()
-        val t5 = measureTimeMillis {
-            try {
-                accessories = accListJsonAdapter.fromJson(jjResult.toString())!!
-            } catch (e: Exception) {
-                println("exception parsing listAccessories result: ${e.message}")
-            }
+
+        try {
+            accessories = accListJsonAdapter.fromJson(jjResult.toString())!!
+        } catch (e: Exception) {
+            println("exception parsing listAccessories result: ${e.message}")
         }
-        println(">> t5 = measure from result string =$t5")
 
         accessories.forEach {
             it.device = device.name
         }
 
         return accessories
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun getAccessoriesReq(device: Device): Response? {
+        val jjResponse: String? = controller?.getAccessoriesReq(device.name)
+        val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
+        val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
+        if (response?.error != "") {
+            println("error getting accessories: ${response?.error}")
+        }
+        println("success for getting accessories")
+        return response
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun subscribeToEvents(device: Device): Response? {
+        val jjResponse: String? = controller?.subscribeToAllEvents(device.name)
+        val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
+        val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
+        if (response?.error != "") {
+            println("error getting accessories: ${response?.error}")
+        }
+        println("success for subscribing to events")
+        return response
     }
 
     fun findService(accessory: Accessory, serviceType: String): Service? {
@@ -363,8 +369,8 @@ object HkSdk : MobileReceiver {
     }
 
     fun getAccessoryName(accessory: Accessory): String? {
-        val ss = HkSdk.findService(accessory, Hkmobile.SType_AccessoryInfo) ?: return null
-        val cc = HkSdk.findCharacteristic(ss, Hkmobile.CType_Name) ?: return null
+        val ss = findService(accessory, Hkmobile.SType_AccessoryInfo) ?: return null
+        val cc = findCharacteristic(ss, Hkmobile.CType_Name) ?: return null
         return cc.value.toString()
     }
 

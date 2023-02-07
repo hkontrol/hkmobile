@@ -25,7 +25,7 @@ fun AccessoryCard(accessory: Accessory) {
             val name = HkSdk.getAccessoryName(accessory) ?: ""
             var services = ""
             val it = accessory.services.iterator()
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 val ss = it.next()
                 services += " * ${Hkmobile.serviceFriendly(ss.type)}\n"
             }

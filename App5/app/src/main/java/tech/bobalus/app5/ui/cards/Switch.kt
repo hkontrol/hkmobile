@@ -1,4 +1,4 @@
-package tech.bobalus.app5.ui.cards;
+package tech.bobalus.app5.ui.cards
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -24,6 +24,9 @@ fun SwitchCardPrimary(
     onLongClick: ((Accessory) -> Unit)? = null,
 ) {
     val cc = HkSdk.findCharacteristic(service, Hkmobile.CType_On) ?: return
+
+    var onState by remember { mutableStateOf(false) }
+
     var onValue = false
     when (cc.value) {
         is Boolean -> onValue = cc.value as Boolean
@@ -33,7 +36,10 @@ fun SwitchCardPrimary(
         is Float -> onValue = cc.value == 1.0F
     }
 
-    var onState by remember { mutableStateOf(onValue) }
+    if (onState != onValue) {
+        onState = onValue
+    }
+
     val onClick: () -> Unit = {
         val newValue = !onState
         HkSdk.controller?.putCharacteristicReq(

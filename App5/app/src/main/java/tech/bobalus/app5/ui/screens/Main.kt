@@ -79,10 +79,12 @@ fun BottomNavigationBar(navController: NavController) {
                     Icon(
                         painterResource(id = item.icon),
                         contentDescription = item.title,
-                        modifier = if(selected)
-                                    Modifier.size(24.dp)
-                                else
-                                    Modifier.size(24.dp).scale(0.75F),
+                        modifier = if (selected)
+                            Modifier.size(24.dp)
+                        else
+                            Modifier
+                                .size(24.dp)
+                                .scale(0.75F),
                     )
                 },
                 label = { Text(text = item.title) },
