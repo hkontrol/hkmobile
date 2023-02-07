@@ -16,35 +16,39 @@ import kotlin.system.measureTimeMillis
 
 /**
 
- device is serialized into
+device is serialized into
 
- {
-    "id": "homebridge\\ 702C",
-    "name": "homebridge\\ 702C",
-    "discovered": true,
-    "paired": false,
-    "verified": false,
-    "pairing": {
-        "id": "homebridge\\ 702C",
-        "pubk": null
-    },
-    "dns_service_name": "homebridge\\ 702C._hap._tcp.local.",
-    "txt": {
-        "c#": "2",
-        "ci": "2",
-        "ff": "0",
-        "id": "AA:BB:CC:DD:EE:FF",
-        "md": "homebridge",
-        "pv": "1.1",
-        "s#": "1",
-        "sf": "0",
-        "sh": "Wmdh8g=="
-    }
+{
+"id": "homebridge\\ 702C",
+"name": "homebridge\\ 702C",
+"discovered": true,
+"paired": false,
+"verified": false,
+"pairing": {
+"id": "homebridge\\ 702C",
+"pubk": null
+},
+"dns_service_name": "homebridge\\ 702C._hap._tcp.local.",
+"txt": {
+"c#": "2",
+"ci": "2",
+"ff": "0",
+"id": "AA:BB:CC:DD:EE:FF",
+"md": "homebridge",
+"pv": "1.1",
+"s#": "1",
+"sf": "0",
+"sh": "Wmdh8g=="
+}
 }
 
  */
 
-data class Pairing(@Json(name = "name") val name: String?, @Json(name = "id") val id: String?, @Json(name = "pubk") val publicKey: String?)
+data class Pairing(
+    @Json(name = "name") val name: String?,
+    @Json(name = "id") val id: String?,
+    @Json(name = "pubk") val publicKey: String?
+)
 
 data class Device(
     @Json(name = "name") val name: String,
@@ -55,32 +59,32 @@ data class Device(
     @Json(name = "dns_service_name") val dnsServiceName: String,
     @Json(name = "txt") val txt: Map<String, String>?,
 ) {
-    constructor() : this( "", false, false, false, null, "", null)
+    constructor() : this("", false, false, false, null, "", null)
 }
 
 data class Characteristic(
-    @Json(name="aid") val aid: Long,
-    @Json(name="iid") val iid: Long,
-    @Json(name="type") val type: String,
-    @Json(name="value") var value: Any?,
-    @Json(name="perms") val permissions: List<String>?,
-    @Json(name="format") val format: String?,
-    @Json(name="maxLen") val maxLem: Long?,
+    @Json(name = "aid") val aid: Long,
+    @Json(name = "iid") val iid: Long,
+    @Json(name = "type") val type: String,
+    @Json(name = "value") var value: Any?,
+    @Json(name = "perms") val permissions: List<String>?,
+    @Json(name = "format") val format: String?,
+    @Json(name = "maxLen") val maxLem: Long?,
     // TODO another fields
 )
 
 data class Service(
-    @Json(name="iid") val iid: Long,
-    @Json(name="type") val type: String,
-    @Json(name="characteristics") val characteristics: List<Characteristic>,
-    @Json(name="primary") val primary: Boolean?,
-    @Json(name="hidden") val hidden: Boolean?,
+    @Json(name = "iid") val iid: Long,
+    @Json(name = "type") val type: String,
+    @Json(name = "characteristics") val characteristics: List<Characteristic>,
+    @Json(name = "primary") val primary: Boolean?,
+    @Json(name = "hidden") val hidden: Boolean?,
 )
 
 data class Accessory(
     @Json(ignore = true) var device: String = "", // assigned in this module
     @Json(name = "aid") val id: Long,
-    @Json(name="services") val services: List<Service>
+    @Json(name = "services") val services: List<Service>
 )
 
 data class Response(
@@ -89,6 +93,7 @@ data class Response(
 )
 
 object HkSdk : MobileReceiver {
+    var running = false
     var controller: CompatibleKontroller? = null
 
     private val _discoverEvents = MutableSharedFlow<Device>()
@@ -110,22 +115,29 @@ object HkSdk : MobileReceiver {
     val closedEvents = _closedEvents.asSharedFlow() // read-only public view
 
     private val moshi: Moshi = Moshi.Builder()
-                                  .add(KotlinJsonAdapterFactory())
-                                    .build()
+        .add(KotlinJsonAdapterFactory())
+        .build()
 
     init {
         println("HkSdk object created")
     }
+
     fun configure(name: String = "app5", configDir: String) {
         if (controller == null) {
             controller = hkmobile.Hkmobile.newCompatibleController(name, configDir, this)
             println("initialized controller")
         }
     }
+
     fun start() {
+        if (running) {
+            return
+        }
         controller?.startDiscovery()
         println("mdns discovery started")
+        running = true
     }
+
     override fun onCharacteristic(p0: String?) {
         TODO("Not yet implemented")
     }
@@ -240,7 +252,7 @@ object HkSdk : MobileReceiver {
 
     // api funcs
     @OptIn(ExperimentalStdlibApi::class)
-    fun getAllDevices() : List<Device> {
+    fun getAllDevices(): List<Device> {
         var jjResponse: String?
         val t1 = measureTimeMillis {
             jjResponse = controller?.allDevices
@@ -274,6 +286,7 @@ object HkSdk : MobileReceiver {
 
         return devices
     }
+
     @OptIn(ExperimentalStdlibApi::class)
     fun getAccessories(device: Device): List<Accessory> {
         var jjResponse: String?
@@ -326,7 +339,7 @@ object HkSdk : MobileReceiver {
         return accessories
     }
 
-    fun findService(accessory: Accessory, serviceType: String) : Service? {
+    fun findService(accessory: Accessory, serviceType: String): Service? {
         val it = accessory.services.iterator()
         while (it.hasNext()) {
             val srv = it.next()
@@ -336,7 +349,8 @@ object HkSdk : MobileReceiver {
         }
         return null
     }
-    fun findCharacteristic(service: Service, characteristicsType: String) : Characteristic? {
+
+    fun findCharacteristic(service: Service, characteristicsType: String): Characteristic? {
         val it = service.characteristics.iterator()
         while (it.hasNext()) {
             val chr = it.next()
@@ -347,6 +361,7 @@ object HkSdk : MobileReceiver {
 
         return null
     }
+
     fun getAccessoryName(accessory: Accessory): String? {
         val ss = HkSdk.findService(accessory, Hkmobile.SType_AccessoryInfo) ?: return null
         val cc = HkSdk.findCharacteristic(ss, Hkmobile.CType_Name) ?: return null
