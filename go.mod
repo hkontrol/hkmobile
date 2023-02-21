@@ -3,7 +3,7 @@ module github.com/hkontrol/hkmobile
 go 1.19
 
 require (
-	github.com/hkontrol/hkontroller v0.0.0-20230221101731-71d4f6963206
+	github.com/hkontrol/hkontroller v0.0.0-20230221164935-2f629c17a78e
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 )
 
