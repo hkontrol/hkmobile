@@ -274,11 +274,24 @@ func (k *hkWrapper) PairSetupAndVerify(deviceName string, pin string) string {
 	if dd == nil {
 		return responseError("device not found")
 	}
-
-	err := dd.PairSetupAndVerify(context.Background(), pin, 5000*time.Millisecond)
-	if err != nil {
-		return responseError(err.Error())
+	if !dd.IsPaired() {
+		err := dd.PairSetup(pin)
+		if err != nil {
+			return responseError(err.Error())
+		}
 	}
+	if !dd.IsVerified() {
+		err := dd.PairVerify()
+		if err != nil {
+			return responseError(err.Error())
+		}
+	}
+
+	//err := dd.PairSetupAndVerify(context.Background(), pin, 5000*time.Millisecond)
+	//if err != nil {
+	//	return responseError(err.Error())
+	//}
+
 	return responseResult("verified")
 }
 
