@@ -101,6 +101,17 @@ fun DevicesScreen() {
                     }) {
                         Text("Unpair")
                     }
+                    if (!selectedDevice.value.verified && selectedDevice.value.discovered) {
+                        TextButton(onClick = {
+                            val result = HkSdk.controller?.pairVerify(selectedDevice.value.name)
+                            Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
+
+                            selectedDevice.value = Device()
+                            enteredPin.value = ""
+                        }) {
+                            Text("Verify")
+                        }
+                    }
 
                 },
                 dismissButton = {}
