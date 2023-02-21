@@ -290,9 +290,14 @@ object HkSdk : MobileReceiver {
         val jjResult: String? = anyJsonAdapter.toJson(response.result)
         // then parse into list
         val devListJsonAdapter: JsonAdapter<List<Device>> = moshi.adapter()
-        val devices: List<Device> = devListJsonAdapter.fromJson(jjResult.toString())!!
+        try {
+            val devices: List<Device> = devListJsonAdapter.fromJson(jjResult.toString())!!
+            return devices
+        } catch (e: Exception) {
+            println("exception getting device list: ${e.message}")
+        }
 
-        return devices
+        return emptyList()
     }
 
     @OptIn(ExperimentalStdlibApi::class)
