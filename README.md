@@ -12,9 +12,9 @@ Using golang library this can be done in two ways:
 
 This repo is about second way.
 
-Because of gomobile [has limited support](https://pkg.go.dev/golang.org/x/mobile/cmd/gobind#hdr-Type_restrictions) for exported types the idea came to wrap `hkontroller` into some kind json api: it is possible to operate with strings and byte slices.
+Because gomobile [has limited support](https://pkg.go.dev/golang.org/x/mobile/cmd/gobind#hdr-Type_restrictions) for exported types we can wrap `hkontroller` into some kind json api: it is possible to operate with strings and byte slices.
 
-For dynamic events such as device discovery/lost, characteristic update we can define interface `MobileReceiver` and implement that interface on Java/Kotlin side:
+To react on events like device discovery/lost, characteristic update we can define interface `MobileReceiver` and implement that interface on Java/Kotlin side:
 
 ```text
 type MobileReceiver interface {
