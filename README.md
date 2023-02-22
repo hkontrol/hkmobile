@@ -37,3 +37,9 @@ go get golang.org/x/mobile/bind
 gomobile bind -target=android ./
 cp ./hkmobile.aar ./App5/app/libs
 ```
+
+## demo
+
+https://youtu.be/9cY_ZYBZ5eM
+
+
