@@ -21,6 +21,7 @@ fun AccessoryCard(accessory: Accessory) {
     when (service.type) {
         Hkmobile.SType_LightBulb -> LightbulbCardPrimary(accessory, service)
         Hkmobile.SType_Switch -> SwitchCardPrimary(accessory, service)
+        Hkmobile.SType_Thermostat -> ThermostatCardPrimary(accessory, service)
         else -> {
             val name = HkSdk.getAccessoryName(accessory) ?: ""
             var services = ""
