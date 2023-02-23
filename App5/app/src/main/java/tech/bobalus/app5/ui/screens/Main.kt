@@ -12,13 +12,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import tech.bobalus.app5.HkSdk
 import tech.bobalus.app5.R
 import tech.bobalus.app5.ui.theme.App5Theme
 
@@ -45,10 +45,17 @@ fun Navigation(navController: NavHostController) {
             SmartScreen()
         }
         composable(NavigationItem.Home.route) {
-            HomeScreen()
+            HomeScreen(navController)
         }
         composable(NavigationItem.Devices.route) {
             DevicesScreen()
+        }
+        composable("accessory/{devId}/{accId}") {navBackStackEntry ->
+            val devId = navBackStackEntry.arguments?.getString("devId")?:return@composable
+            val accIdStr = navBackStackEntry.arguments?.getString("accId")?:return@composable
+            val accId = accIdStr.toLong(10)
+            val accessory = HkSdk.findAccessory(devId, accId)?:return@composable
+            AccessoryScreen(accessory)
         }
     }
 }

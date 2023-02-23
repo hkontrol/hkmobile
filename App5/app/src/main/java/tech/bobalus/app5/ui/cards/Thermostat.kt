@@ -62,7 +62,7 @@ fun ThermostatCardPrimary(
     val onClick : () -> Unit = {
         // TODO something
     }
-    
+
     Card(
         elevation = 4.dp,
         modifier = Modifier

@@ -59,6 +59,7 @@ data class Device(
     @Json(name = "txt") val txt: Map<String, String>?,
 ) {
     constructor() : this("", false, false, false, null, "", null)
+    constructor(name: String): this(name, false, false, false, null, "", null)
 }
 
 data class Characteristic(
@@ -134,7 +135,7 @@ object HkSdk : MobileReceiver {
 
     fun configure(name: String = "app5", configDir: String) {
         if (controller == null) {
-            controller = hkmobile.Hkmobile.newCompatibleController(name, configDir, this)
+            controller = Hkmobile.newCompatibleController(name, configDir, this)
             println("initialized controller")
         }
     }
@@ -348,6 +349,19 @@ object HkSdk : MobileReceiver {
         }
         println("success for subscribing to events")
         return response
+    }
+
+    fun findAccessory(devId: String, accId: Long): Accessory? {
+        val device = Device(devId)
+        val it = listAccessories(device).iterator()
+        while (it.hasNext()) {
+            val aa = it.next()
+            if (aa.id == accId) {
+                return aa
+            }
+        }
+
+        return null
     }
 
     fun findService(accessory: Accessory, serviceType: String): Service? {

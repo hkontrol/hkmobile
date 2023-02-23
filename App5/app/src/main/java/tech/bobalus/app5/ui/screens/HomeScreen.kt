@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tech.bobalus.app5.model.HomeViewModel
@@ -22,19 +24,19 @@ import tech.bobalus.app5.ui.cards.AccessoryCard
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .wrapContentSize(Alignment.TopStart)
     ) {
-        HomeView()
+        HomeView(navController = navController)
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun HomeView(homeViewModel: HomeViewModel = viewModel()) {
+fun HomeView(homeViewModel: HomeViewModel = viewModel(), navController: NavController) {
 
     val uiState = homeViewModel.uiState.collectAsState()
     val lazyGridState: LazyGridState = rememberLazyGridState()
@@ -50,6 +52,8 @@ fun HomeView(homeViewModel: HomeViewModel = viewModel()) {
 
     val pullRefreshState = rememberPullRefreshState(refreshing, ::refresh)
 
+//    val navController = rememberNavController()
+
     Box(Modifier.pullRefresh(pullRefreshState)) {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 128.dp),
@@ -58,7 +62,10 @@ fun HomeView(homeViewModel: HomeViewModel = viewModel()) {
         ) {
             if (!refreshing) {
                 items(uiState.value.accessories) { t ->
-                    AccessoryCard(accessory = t)
+                    AccessoryCard(accessory = t, onLongClick = {
+                        // TODO something with navController
+                        navController.navigate("accessory/${it.device}/${it.id}")
+                    })
                 }
             }
         }
