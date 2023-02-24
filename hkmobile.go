@@ -362,6 +362,20 @@ func (k *hkWrapper) PutCharacteristicReq(deviceName string, aid int, iid int, va
 	if err != nil {
 		return responseError(err.Error())
 	}
+	// update characteristic value on controller
+	// maybe it is better to move this part to hkontroller?
+	for _, aa := range dd.Accessories() {
+		if aa.Id == uint64(aid) {
+			for _, ss := range aa.Ss {
+				for _, cc := range ss.Cs {
+					if cc.Iid == uint64(iid) {
+						cc.Value = vv
+					}
+				}
+			}
+		}
+	}
+
 	return responseResult(vv)
 }
 
@@ -382,6 +396,23 @@ func (k *hkWrapper) onEvent(deviceName string, e emitter.Event) {
 		Aid: e.Args[0],
 		Iid: e.Args[1],
 		Val: e.Args[2],
+	}
+
+	// update characteristic value on controller
+	// maybe it is better to move this part to hkontroller?
+	dd := k.controller.GetDevice(deviceName)
+	if dd != nil {
+		for _, aa := range dd.Accessories() {
+			if aa.Id == ev.Aid {
+				for _, ss := range aa.Ss {
+					for _, cc := range ss.Cs {
+						if cc.Iid == ev.Iid {
+							cc.Value = ev.Val
+						}
+					}
+				}
+			}
+		}
 	}
 
 	jj, err := json.Marshal(ev)
