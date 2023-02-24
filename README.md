@@ -42,4 +42,11 @@ cp ./hkmobile.aar ./App5/app/libs
 
 https://youtu.be/9cY_ZYBZ5eM
 
+![device list](./screenshots/01.png)
+
+![device info](./screenshots/02.png)
+
+![accessories list](./screenshots/03.png)
+
+![dimmer](./screenshots/04.png)
 
