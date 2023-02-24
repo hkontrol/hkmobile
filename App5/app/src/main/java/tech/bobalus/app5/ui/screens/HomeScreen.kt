@@ -52,8 +52,6 @@ fun HomeView(homeViewModel: HomeViewModel = viewModel(), navController: NavContr
 
     val pullRefreshState = rememberPullRefreshState(refreshing, ::refresh)
 
-//    val navController = rememberNavController()
-
     Box(Modifier.pullRefresh(pullRefreshState)) {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 128.dp),

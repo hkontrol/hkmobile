@@ -123,7 +123,7 @@ fun LightbulbCardService(
     ) {
         Column() {
             Row(
-                Modifier.padding(4.dp),
+                Modifier.padding(4.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -137,7 +137,8 @@ fun LightbulbCardService(
             }
 
             if (brightnessCc != null) {
-                Slider(value = brightnessState,
+                Slider(modifier = Modifier.fillMaxWidth(),
+                    value = brightnessState,
                     steps = 101,
                     valueRange = 0f..100f,
                     onValueChange = {

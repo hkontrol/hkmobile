@@ -1,7 +1,6 @@
 package tech.bobalus.app5.ui.cards
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Card
@@ -18,8 +17,10 @@ import tech.bobalus.app5.Service
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ServiceCard(accessory: Accessory, service: Service) {
+    // TODO uiState
     when (service.type) {
         Hkmobile.SType_LightBulb -> LightbulbCardService(accessory, service)
+        Hkmobile.SType_Switch -> SwitchCardService(accessory, service)
         else -> {
             val name = HkSdk.getServiceName(service) ?: ""
             Card(
