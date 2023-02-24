@@ -387,6 +387,11 @@ object HkSdk : MobileReceiver {
         return null
     }
 
+    fun getServiceName(service: Service): String? {
+        val cc = findCharacteristic(service, Hkmobile.CType_Name) ?: return null
+        return cc.value.toString()
+    }
+
     fun getAccessoryName(accessory: Accessory): String? {
         val ss = findService(accessory, Hkmobile.SType_AccessoryInfo) ?: return null
         val cc = findCharacteristic(ss, Hkmobile.CType_Name) ?: return null
