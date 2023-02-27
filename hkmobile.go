@@ -7,7 +7,6 @@ import (
 	"github.com/hkontrol/hkontroller"
 	"github.com/olebedev/emitter"
 	"path"
-	"time"
 )
 
 type MobileReceiver interface {
@@ -92,8 +91,7 @@ func (k *hkWrapper) StartDiscovery() string {
 	disco, lost := k.controller.StartDiscoveryWithContext(ctx)
 
 	verify := func(d *hkontroller.Device) {
-		ctx := context.Background()
-		err := d.PairSetupAndVerify(ctx, "pin doesn't matter if already paired", 5*time.Second)
+		err := d.PairVerify()
 		if err != nil {
 			fmt.Println("pair-verify err: ", err)
 			return
