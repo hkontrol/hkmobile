@@ -40,7 +40,7 @@ cp ./hkmobile.aar ./App5/app/libs
 
 ## demo
 
-https://youtu.be/9cY_ZYBZ5eM
+https://youtu.be/jgUeeyzzjLg
 
 ![device list](./screenshots/01.png)
 
