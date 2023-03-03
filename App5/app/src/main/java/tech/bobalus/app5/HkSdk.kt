@@ -1,5 +1,6 @@
 package tech.bobalus.app5
 
+import androidx.lifecycle.ViewModel
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -8,8 +9,10 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import hkmobile.CompatibleKontroller
 import hkmobile.Hkmobile
 import hkmobile.MobileReceiver
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
@@ -100,7 +103,7 @@ data class Response(
     @Json(name = "result") val result: Any?
 )
 
-object HkSdk : MobileReceiver {
+object HkSdk : MobileReceiver, ViewModel() {
     var running = false
     var controller: CompatibleKontroller? = null
 
@@ -284,6 +287,7 @@ object HkSdk : MobileReceiver {
         val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
         val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
         if (response?.error != "") {
+            println("error getting all devices")
             return emptyList()
         }
         // back to json
@@ -334,6 +338,7 @@ object HkSdk : MobileReceiver {
         val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
         if (response?.error != "") {
             println("error getting accessories: ${response?.error}")
+            return null
         }
         println("success for getting accessories")
         return response
@@ -346,6 +351,7 @@ object HkSdk : MobileReceiver {
         val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
         if (response?.error != "") {
             println("error getting accessories: ${response?.error}")
+            return null
         }
         println("success for subscribing to events")
         return response
@@ -375,7 +381,7 @@ object HkSdk : MobileReceiver {
         return null
     }
 
-    fun findCharacteristic(service: Service, characteristicsType: String): Characteristic? {
+    fun findCharacteristicInService(service: Service, characteristicsType: String): Characteristic? {
         val it = service.characteristics.iterator()
         while (it.hasNext()) {
             val chr = it.next()
@@ -386,16 +392,72 @@ object HkSdk : MobileReceiver {
 
         return null
     }
+    fun findCharacteristicInAccessory(accessory: Accessory, characteristicsType: String): Characteristic? {
+        val sit = accessory.services.iterator()
+        while (sit.hasNext()) {
+            val service = sit.next()
+            val it = service.characteristics.iterator()
+            while (it.hasNext()) {
+                val chr = it.next()
+                if (chr.type == characteristicsType) {
+                    return chr
+                }
+            }
+        }
+
+        return null
+    }
 
     fun getServiceName(service: Service): String? {
-        val cc = findCharacteristic(service, Hkmobile.CType_Name) ?: return null
+        val cc = findCharacteristicInService(service, Hkmobile.CType_Name) ?: throw Exception("not found")
         return cc.value.toString()
     }
 
     fun getAccessoryName(accessory: Accessory): String? {
-        val ss = findService(accessory, Hkmobile.SType_AccessoryInfo) ?: return null
-        val cc = findCharacteristic(ss, Hkmobile.CType_Name) ?: return null
+        val cc = findCharacteristicInAccessory(accessory, Hkmobile.CType_Name) ?: return null
         return cc.value.toString()
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun getCharacteristicValue(accessory: Accessory, characteristicsType: String):Any? {
+        val cc = findCharacteristicInAccessory(accessory, characteristicsType)?:return null
+        val jjResponse: String? = controller?.getCharacteristicReq(accessory.device, accessory.id, cc.iid)
+        val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
+        val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
+        if (response?.error != "") {
+            println("error getting characteristic value: ${response?.error}")
+            return null
+        }
+        // back to json. is there a way to avoid it?
+        val anyJsonAdapter: JsonAdapter<Any> = moshi.adapter()
+        val jjResult: String? = anyJsonAdapter.toJson(response!!.result)
+
+        val charJsonAdapter: JsonAdapter<Characteristic> = moshi.adapter()
+
+        try {
+            return charJsonAdapter.fromJson(jjResult.toString())!!
+        } catch (e: Exception) {
+            println("exception parsing listAccessories result: ${e.message}")
+        }
+        return null
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun putCharacteristicValue(accessory: Accessory, characteristicsType: String, value: Any):Any? {
+        val cc = findCharacteristicInAccessory(accessory, characteristicsType)?:return null
+        // TODO think how properly convert value to json string
+        val jjResponse = controller?.putCharacteristicReq(accessory.device, accessory.id, cc.iid, value.toString())
+        val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
+        val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
+        if (response?.error != "") {
+            println("error getting characteristic value: ${response?.error}")
+            return null
+        }
+        cc.value = value
+        val event = CharacteristicEvent(accessory.device, accessory.id, cc.iid, value)
+        println("put char: $event")
+
+        return cc.value
     }
 
     fun findPrimaryService(accessory: Accessory): Service? {
