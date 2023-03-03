@@ -360,6 +360,7 @@ func (k *hkWrapper) PutCharacteristicReq(deviceName string, aid int, iid int, va
 	if err != nil {
 		return responseError(err.Error())
 	}
+
 	// update characteristic value on controller
 	// maybe it is better to move this part to hkontroller?
 	for _, aa := range dd.Accessories() {
@@ -368,6 +369,22 @@ func (k *hkWrapper) PutCharacteristicReq(deviceName string, aid int, iid int, va
 				for _, cc := range ss.Cs {
 					if cc.Iid == uint64(iid) {
 						cc.Value = vv
+
+						// experimental, try to emit event
+						go func(aid, iid uint64, val interface{}) {
+							ev := characteristicEvent{
+								Dev: deviceName,
+								Aid: aid,
+								Iid: iid,
+								Val: val,
+							}
+							jj, err := json.Marshal(ev)
+							if err != nil {
+								fmt.Println("cannot marshal characteristic event: %s", err.Error())
+								return
+							}
+							k.receiver.OnCharacteristic(string(jj))
+						}(uint64(aid), uint64(iid), vv)
 					}
 				}
 			}
