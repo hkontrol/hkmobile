@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
-import androidx.compose.material.Slider
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -24,7 +23,7 @@ fun SwitchCardPrimary(
     service: Service,
     onLongClick: ((Accessory) -> Unit)? = null,
 ) {
-    val cc = HkSdk.findCharacteristic(service, Hkmobile.CType_On) ?: return
+    val cc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_On) ?: return
 
     var onState by remember { mutableStateOf(false) }
 
@@ -83,7 +82,7 @@ fun SwitchCardService(
     accessory: Accessory,
     service: Service,
 ) {
-    val onCc = HkSdk.findCharacteristic(service, Hkmobile.CType_On) ?: return
+    val onCc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_On) ?: return
 
     var onState by remember { mutableStateOf(false) }
 
@@ -97,10 +96,7 @@ fun SwitchCardService(
 
     val onClick : () -> Unit = {
         val newValue = !onState
-        HkSdk.controller?.putCharacteristicReq(
-            accessory.device,
-            accessory.id, onCc.iid, newValue.toString()
-        )
+        HkSdk.putCharacteristicValue(accessory, Hkmobile.CType_On, newValue)
         onCc.value = newValue
         onState = newValue
     }

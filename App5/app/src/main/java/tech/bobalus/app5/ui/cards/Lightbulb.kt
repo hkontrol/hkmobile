@@ -24,7 +24,7 @@ fun LightbulbCardPrimary(
     service: Service,
     onLongClick: ((Accessory) -> Unit)? = null,
 ) {
-    val cc = HkSdk.findCharacteristic(service, Hkmobile.CType_On) ?: return
+    val cc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_On) ?: return
 
     var onState by remember { mutableStateOf(false) }
     when (cc.value) {
@@ -37,10 +37,7 @@ fun LightbulbCardPrimary(
 
     val onClick : () -> Unit = {
         val newValue = !onState
-        HkSdk.controller?.putCharacteristicReq(
-            accessory.device,
-            accessory.id, cc.iid, newValue.toString()
-        )
+        HkSdk.putCharacteristicValue(accessory, Hkmobile.CType_On, newValue)
         cc.value = newValue
         onState = newValue
     }
@@ -83,8 +80,8 @@ fun LightbulbCardService(
     service: Service,
 ) {
     // TODO brightness and other features
-    val onCc = HkSdk.findCharacteristic(service, Hkmobile.CType_On) ?: return
-    val brightnessCc = HkSdk.findCharacteristic(service, Hkmobile.CType_Brightness)
+    val onCc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_On) ?: return
+    val brightnessCc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_Brightness)
 
     var onState by remember { mutableStateOf(false) }
 
@@ -109,13 +106,12 @@ fun LightbulbCardService(
 
     val onClick : () -> Unit = {
         val newValue = !onState
-        HkSdk.controller?.putCharacteristicReq(
-            accessory.device,
-            accessory.id, onCc.iid, newValue.toString()
-        )
-        onCc.value = newValue
-        onState = newValue
+        if ((HkSdk.putCharacteristicValue(accessory, Hkmobile.CType_On, newValue)) != null) {
+                onCc.value = newValue
+                onState = newValue
+            }
     }
+
     Card(
         elevation = 4.dp,
         modifier = Modifier
@@ -145,10 +141,7 @@ fun LightbulbCardService(
                         brightnessState = it
                     },
                     onValueChangeFinished = {
-                        HkSdk.controller?.putCharacteristicReq(
-                            accessory.device,
-                            accessory.id, brightnessCc.iid, (brightnessState.toInt()).toString()
-                        )
+                        HkSdk.putCharacteristicValue(accessory, Hkmobile.CType_Brightness, brightnessState)
                     }
                 )
             }
