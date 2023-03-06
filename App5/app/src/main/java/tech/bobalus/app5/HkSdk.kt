@@ -73,6 +73,12 @@ data class Characteristic(
     @Json(name = "perms") val permissions: List<String>?,
     @Json(name = "format") val format: String?,
     @Json(name = "maxLen") val maxLem: Long?,
+
+    @Json(name = "minValue") var minValue: Float?,
+    @Json(name = "maxValue") var maxValue: Float?,
+    @Json(name = "minStep") var maxStep: Float?,
+    @Json(name = "valid-values") var validValues: List<Float>?,
+    @Json(name = "valid-values-range") var validValuesRange: List<Float>?,
     // TODO another fields
 )
 
@@ -340,7 +346,7 @@ object HkSdk : MobileReceiver, ViewModel() {
             println("error getting accessories: ${response?.error}")
             return null
         }
-        println("success for getting accessories")
+        println("success for getting accessories $jjResponse")
         return response
     }
 

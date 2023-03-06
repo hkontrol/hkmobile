@@ -18,6 +18,11 @@ import tech.bobalus.app5.Service
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
+const val modeOff = 0
+const val modeHeat = 1
+const val modeCool = 2
+const val modeAuto = 3
+
 fun cmode2str(cc: Characteristic): String {
     var mode = -1
     when (cc.value) {
@@ -26,9 +31,9 @@ fun cmode2str(cc: Characteristic): String {
         is Double -> mode = floor(cc.value as Double).toInt()
     }
     return when(mode) {
-        0 -> "off"
-        1 -> "heat"
-        2 -> "cool"
+        modeOff -> "off"
+        modeHeat -> "heat"
+        modeCool -> "cool"
         else -> cc.value.toString()
     }
 }
@@ -40,10 +45,10 @@ fun tmode2str(cc: Characteristic): String {
         is Double -> mode = floor(cc.value as Double).toInt()
     }
     return when(mode) {
-        0 -> "off"
-        1 -> "heat"
-        2 -> "cool"
-        3 -> "auto"
+        modeOff -> "off"
+        modeHeat -> "heat"
+        modeCool -> "cool"
+        modeAuto -> "auto"
         else -> cc.value.toString()
     }
 }
@@ -104,7 +109,11 @@ fun ThermostatCardService(
     val chc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_CurrentHeatingCoolingState) ?: return
     val thc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_TargetHeatingCoolingState) ?: return
 
-    var targetTemp = 10.0f
+
+    println("currentHeatingCoolingState: $chc")
+    println("targetHeatingCoolingState: $thc")
+
+    var targetTemp = 10.0f // TODO: extract from characteristic
     try {
         targetTemp = ttc.value.toString().toFloat()
     } catch (e: Exception) {
@@ -175,10 +184,10 @@ fun ThermostatCardService(
             val onModeChange = fun(modeStr: String) {
                 var mode = 0
                 when (modeStr) {
-                    "off" -> mode = 0
-                    "heat" -> mode = 1
-                    "cool" -> mode = 2
-                    "auto" -> mode = 3
+                    "off" -> mode = modeOff
+                    "heat" -> mode = modeHeat
+                    "cool" -> mode = modeCool
+                    "auto" -> mode = modeAuto
                     else -> return
                 }
                 HkSdk.putCharacteristicValue(
@@ -194,79 +203,86 @@ fun ThermostatCardService(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Column(
-                    horizontalAlignment = CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    RadioButton(
-                        selected = modeSelectorValue == "off",
-                        onClick = {
-                            modeSelectorValue = "off"
-                            onModeChange(modeSelectorValue)
-                        },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color.Gray),
-                    )
-                    Text(
-                        text = "Off",
-                        style = MaterialTheme.typography.body1,
-                        textAlign = TextAlign.Center,
-                    )
+                if (chc.validValues == null || chc.validValues?.contains(modeOff.toFloat()) == true) {
+                    Column(
+                        horizontalAlignment = CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        RadioButton(
+                            selected = modeSelectorValue == "off",
+                            onClick = {
+                                modeSelectorValue = "off"
+                                onModeChange(modeSelectorValue)
+                            },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color.Gray),
+                        )
+                        Text(
+                            text = "Off",
+                            style = MaterialTheme.typography.body1,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
-                Column(
-                    horizontalAlignment = CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    RadioButton(
-                        selected = modeSelectorValue == "heat",
-                        onClick = {
-                            modeSelectorValue = "heat"
-                            onModeChange(modeSelectorValue)
-                        },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color.Red),
-                    )
-                    Text(
-                        text = "Heat",
-                        style = MaterialTheme.typography.body1,
-                        textAlign = TextAlign.Center,
-                    )
+                if (chc.validValues == null || chc.validValues?.contains(modeHeat.toFloat()) == true) {
+                    Column(
+                        horizontalAlignment = CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        RadioButton(
+                            selected = modeSelectorValue == "heat",
+                            onClick = {
+                                modeSelectorValue = "heat"
+                                onModeChange(modeSelectorValue)
+                            },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color.Red),
+                        )
+                        Text(
+                            text = "Heat",
+                            style = MaterialTheme.typography.body1,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
+                if (chc.validValues == null || chc.validValues?.contains(modeCool.toFloat()) == true) {
+                    Column(
+                        horizontalAlignment = CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        RadioButton(
+                            selected = modeSelectorValue == "cool",
+                            onClick = {
+                                modeSelectorValue = "cool"
+                                onModeChange(modeSelectorValue)
+                            },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color.Blue),
+                        )
+                        Text(
+                            text = "Cool",
+                            style = MaterialTheme.typography.body1,
+                            textAlign = TextAlign.Center,
+                        )
 
-                Column(
-                    horizontalAlignment = CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    RadioButton(
-                        selected = modeSelectorValue == "cool",
-                        onClick = {
-                            modeSelectorValue = "cool"
-                            onModeChange(modeSelectorValue)
-                        },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color.Blue),
-                    )
-                    Text(
-                        text = "Cool",
-                        style = MaterialTheme.typography.body1,
-                        textAlign = TextAlign.Center,
-                    )
-
+                    }
                 }
-                Column(
-                    horizontalAlignment = CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    RadioButton(
-                        selected = modeSelectorValue == "auto",
-                        onClick = {
-                            modeSelectorValue = "auto"
-                            onModeChange(modeSelectorValue)
-                        },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color.Green),
-                    )
-                    Text(
-                        text = "Auto",
-                        style = MaterialTheme.typography.body1,
-                        textAlign = TextAlign.Center,
-                    )
+                if (chc.validValues == null || chc.validValues?.contains(modeAuto.toFloat()) == true) {
+                    Column(
+                        horizontalAlignment = CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        RadioButton(
+                            selected = modeSelectorValue == "auto",
+                            onClick = {
+                                modeSelectorValue = "auto"
+                                onModeChange(modeSelectorValue)
+                            },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color.Green),
+                        )
+                        Text(
+                            text = "Auto",
+                            style = MaterialTheme.typography.body1,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
         }
