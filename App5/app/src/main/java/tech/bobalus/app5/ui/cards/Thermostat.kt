@@ -110,16 +110,16 @@ fun ThermostatCardService(
     val thc = HkSdk.findCharacteristicInService(service, Hkmobile.CType_TargetHeatingCoolingState) ?: return
 
 
-    println("currentHeatingCoolingState: $chc")
-    println("targetHeatingCoolingState: $thc")
+    val minTt = ttc.minValue?: 10.0f
+    val maxTt =  ttc.maxValue?: 35.0f
 
-    var targetTemp = 10.0f // TODO: extract from characteristic
+    var targetTemp = minTt
     try {
         targetTemp = ttc.value.toString().toFloat()
     } catch (e: Exception) {
         println(e.message)
     }
-    var currentTemp = 10.0f
+    var currentTemp = 0.0f
     try {
         currentTemp = ctc.value.toString().toFloat()
     } catch (e: Exception) {
@@ -159,8 +159,8 @@ fun ThermostatCardService(
                         (temperatureSliderValue*100).roundToInt()/100.0
                     )
                 },
-                valueRange = 10f..35f,
-                steps = 25,
+                valueRange = minTt..maxTt,
+                steps = 0,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
