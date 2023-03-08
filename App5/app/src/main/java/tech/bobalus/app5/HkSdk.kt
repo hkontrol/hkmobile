@@ -157,6 +157,10 @@ object HkSdk : MobileReceiver, ViewModel() {
         println("mdns discovery started")
         running = true
     }
+    fun stop() {
+        controller?.stopDiscovery()
+        running = false
+    }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCharacteristic(p0: String?) {
@@ -456,7 +460,7 @@ object HkSdk : MobileReceiver, ViewModel() {
         val jsonAdapter: JsonAdapter<Response> = moshi.adapter()
         val response: Response? = jsonAdapter.fromJson(jjResponse.toString())
         if (response?.error != "") {
-            println("error getting characteristic value: ${response?.error}")
+            println("error putting characteristic value: ${response?.error}")
             return null
         }
         cc.value = value
